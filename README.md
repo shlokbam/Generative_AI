@@ -1,11 +1,13 @@
-# Generative AI & LangChain Learning Journey 🚀
+# Generative AI & LangChain - Hands-On Codebase 🚀
 
-Welcome to my Generative AI and LangChain learning repository! This project tracks my progress, code implementations, and concepts as I follow along with this excellent YouTube Playlist:
+A comprehensive repository of practical hands-on implementations, architectural modules, and complete codebases for Generative AI and LangChain concepts, structured around the following playlist:
 👉 **[Generative AI & LangChain Course Playlist](https://www.youtube.com/playlist?list=PLaldQ9PzZd9oXR4PMGR4pr_DX4wFHkFwR)**
+
+This repository serves as a centralized hub for all my completed implementations, modular integrations, and custom applications pushed for production-ready reference.
 
 ---
 
-## 📅 Roadmap & Progress Tracker
+## 📅 Modules & Implementations Tracker
 
 - [x] **Video 1: Foundations of LangChain, LLM Integrations, Local Embeddings & Streamlit UIs**  
 - [ ] **Video 2: (Upcoming)**
@@ -40,20 +42,20 @@ Generative_AI/
 
 ---
 
-## 🛠️ Video 1: Accomplished Tasks & Concepts
+## 🛠️ Video 1: Completed Implementations & Concepts
 
-In **Video 1**, I completed the core foundational setup and successfully built:
+The following functional units and configurations have been successfully implemented and verified:
 * **Chat Integrations**: 
   * Hooked up **Groq Cloud API** using `llama-3.3-70b-versatile`.
   * Connected **Hugging Face Hub** using `meta-llama/Llama-3.3-70B-Instruct`.
 * **State & Memory Management**:
-  * Built a CLI chatbot leveraging LangChain message schemas (`SystemMessage`, `HumanMessage`, `AIMessage`) to maintain interactive conversation history.
+  * Built an interactive CLI chatbot utilizing LangChain message schemas (`SystemMessage`, `HumanMessage`, `AIMessage`) to maintain persistent session history.
 * **Streamlit Web Application**:
-  * Designed and deployed a beautiful Streamlit chatbot interface with sidebar customizations (Model selectors, creativity/temperature sliders, and live system prompt tuning).
+  * Designed and deployed a feature-rich Streamlit chatbot interface with sidebar customizations (Model selectors, creativity/temperature sliders, and live system prompt tuning).
 * **Text Embeddings**:
   * Ran local mathematical text representations using `sentence-transformers/all-MiniLM-L6-v2` to convert text into 384-dimensional vector coordinates.
 * **Core Concepts**:
-  * Mastered **Prompt Templates** (`ChatPromptTemplate` for dynamic variables) and **Structured JSON Outputs** from LLMs.
+  * Implemented modular **Prompt Templates** (`ChatPromptTemplate` for dynamic variables) and **Structured JSON Outputs** from LLMs.
 
 ---
 

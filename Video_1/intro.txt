@@ -1,9 +1,9 @@
-Generative AI & LangChain - Video 1 Implementation Summary
+Generative AI & LangChain - Video 1 Hands-On Implementations
 ================================================================================
 
-In this section (Video 1), you have successfully built a complete foundational setup for working with Large Language Models (LLMs) and Text Embeddings using LangChain, Groq, Hugging Face, and Streamlit.
+In this section (Video 1), a complete functional setup has been successfully built and pushed for working with Large Language Models (LLMs) and Text Embeddings using LangChain, Groq, Hugging Face, and Streamlit.
 
-Here is the breakdown of all files and features implemented:
+Here is the codebase breakdown of all files and features implemented:
 
 1. WORKSPACE CONFIGURATION
 --------------------------------------------------------------------------------
@@ -19,12 +19,12 @@ Here is the breakdown of all files and features implemented:
 2. CHAT MODELS (Video_1/chat_models/)
 --------------------------------------------------------------------------------
 * chat.py
-  - Implements your first simple call to an LLM via Groq.
-  - Loads the environment variables, initializes `ChatGroq` with `llama-3.3-70b-versatile`, and sends a one-off query ("what is cricket?") to print the response.
+  - Implements a simple call to an LLM via Groq.
+  - Loads the environment variables, initializes `ChatGroq` with `llama-3.3-70b-versatile`, and sends a one-off query ("what is cricket") to print the response.
 
 * Hugging_face.py
   - Integrates LangChain with the Hugging Face Hub.
-  - Demonstrates setting up a `HuggingFaceEndpoint` pointing to `meta-llama/Llama-3.3-70B-Instruct` using the `ChatHuggingFace` wrapper.
+  - Sets up a `HuggingFaceEndpoint` pointing to `meta-llama/Llama-3.3-70B-Instruct` using the `ChatHuggingFace` wrapper.
 
 * chatbot.py
   - Implements an interactive terminal-based chatbot loop.
@@ -35,7 +35,7 @@ Here is the breakdown of all files and features implemented:
   - Features an `exit` command to safely exit the interactive loop and print the final message list.
 
 * chatbot_ui.py
-  - Elevates the chatbot experience with a premium, web-based UI built on Streamlit.
+  - Elevates the chatbot experience with a web-based UI built on Streamlit.
   - Features implemented:
     - Custom gradient-styled header and subtitle.
     - Sidebar settings including Model Selection, Temperature (Creativity) adjustment, and System Instruction modifier.
@@ -48,14 +48,13 @@ Here is the breakdown of all files and features implemented:
 * huggingface_embeddings.py
   - Implements text vectorization using local Hugging Face embedding models.
   - Loads the `sentence-transformers/all-MiniLM-L6-v2` model locally to generate 384-dimensional dense vectors.
-  - Demonstrates converting plain text lists (e.g. `["hello this is shlok", "cricket is a good game"]`) into semantic vector representations.
+  - Converts plain text lists (e.g. `["hello this is shlok", "cricket is a good game"]`) into semantic vector representations.
 
 
-4. CORE CONCEPTS & LEARNINGS
+4. CORE CONCEPTS & TECHNIQUES IMPLEMENTED
 --------------------------------------------------------------------------------
 * Prompt Templates
-  - Explored utilizing `PromptTemplate` and `ChatPromptTemplate` structures to design dynamic, reusable prompts with placeholder values (variable substitution). This separates static styling instructions from dynamic user inputs.
+  - Utilized `PromptTemplate` and `ChatPromptTemplate` structures to design dynamic, reusable prompts with placeholder values (variable substitution). This separates static styling instructions from dynamic user inputs.
 
 * Structured Outputs (JSON Format)
-  - Learned how to request and parse structured, machine-readable payloads (like standard JSON strings or Pydantic schema validation objects) directly from LLMs. This guarantees that responses follow strict structures suitable for direct database storage or API integration.
-
+  - Implemented mechanisms to request and parse structured, machine-readable payloads (like standard JSON strings or Pydantic schema validation objects) directly from LLMs. This guarantees that responses follow strict structures suitable for direct database storage or API integration.
