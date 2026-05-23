@@ -1,0 +1,10 @@
+langchain
+langchain-groq
+groq
+python-dotenv
+langchain-huggingface
+huggingface_hub
+sentence-transformers
+streamlit
+
+
