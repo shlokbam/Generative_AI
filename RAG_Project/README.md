@@ -23,6 +23,10 @@ RAG_Project/
 │   ├── token_split.py        # TokenTextSplitter testing (GRU.pdf)
 │   └── semantic_split.py     # RecursiveCharacterTextSplitter testing (GRU.pdf)
 │
+├── Vector_Store/             # 🗄️ Vector Database Storage & Indexing
+│   └── db.py                 # ChromaDB and MistralEmbeddings ingestion pipeline
+│
+├── chroma_db/                # [Local Only - Git Ignored] Persisted vector records
 ├── Big.pdf                   # Large test corpus PDF for RAG pipeline ingestion
 ├── .env                      # [Local Only] API keys and config (Mistral, HuggingFace, Groq)
 ├── main.py                   # Main RAG orchestration & summarization pipeline
@@ -45,14 +49,21 @@ To maximize LLM context window efficiency and prepare content for semantic vecto
 * **Token-Based Splitting (`token_split.py`)**: Uses `TokenTextSplitter` powered by `tiktoken` to split documents precisely by token budgets (`chunk_size=1000`) rather than character bounds.
 * **Recursive Character Splitting (`semantic_split.py` & `main.py`)**: Employs `RecursiveCharacterTextSplitter` as the primary RAG splitter (`chunk_size=1000`, `chunk_overlap=200`). This recursively splits on formatting marks (`\n\n`, `\n`, space, and empty string) to maintain semantic cohesion and prevent paragraphs from being split awkwardly.
 
-### 3. Intelligent Prompts & Orchestration (`main.py`) 🔗
+### 3. Vector Database Storage, Embeddings Ingestion & Search 🗄️
+To store chunks securely and enable fast, semantically accurate document retrieval, we integrated embedding models and an indexing layer:
+* **Mistral AI Embeddings (`MistralAIEmbeddings`)**: Uses the state-of-the-art `mistral-embed` model to transform raw text chunks into dense, mathematical vector embeddings.
+* **Chroma DB Ingest (`db.py`)**: Harnesses `Chroma` vector store to load text documents, calculate semantic vector embeddings, and save the indexed records locally inside a persistent folder (`RAG_Project/chroma_db/`).
+* **Semantic Similarity Search**: Validated the retrieval layer by executing query-based similarity searches (`vectorstore.similarity_search("What is used for data analysis?", k=2)`), outputting clean, structured page contents and source metadata for top matching records.
+* **Environment Integrity**: Confined the generated SQLite database binaries within local storage using Git ignore rules, keeping your version control repository lightweight and secure.
+
+### 4. Intelligent Prompts & Orchestration (`main.py`) 🔗
 The main entry point ties document ingestion, splitting, and model invocation together:
 * **Environment Synchronization**: Integrates `dotenv` to load environment keys without exposing credentials in the codebase.
 * **Recursive Splitting Integration**: Loads `Big.pdf`, splits it structurally using `RecursiveCharacterTextSplitter`, and integrates chunks into the context flow.
 * **Low-Latency LLM Pipeline**: Harnesses `ChatMistralAI` using the high-throughput `open-mistral-7b` model to evaluate loaded text structures.
 * **Custom Prompt Templating**: Features a dynamic `ChatPromptTemplate` that structures the instructions for the LLM (`"You are a AI that summarizs the text"`) and feeds in parsed document pages dynamically.
 
-### 4. Future-Proof Ingest System 🏗️
+### 5. Future-Proof Ingest System 🏗️
 The project dependencies are architected to support future RAG phases:
 * **Embeddings**: Prepared for HuggingFace local models via `sentence-transformers` and `langchain-huggingface`.
 * **Vector Store**: Pre-configured for high-speed local storage and search using `chromadb`.
@@ -116,7 +127,15 @@ pip install -r RAG_Project/requirements.txt
   ```
   *Splits GRU research paper recursively using structural boundaries.*
 
-### 5. Execute Main RAG Pipeline
+### 5. Run Vector Database Ingestions & Similarity Queries 🗄️
+
+* **Test ChromaDB Vector Store Ingest & Retrieval**:
+  ```bash
+  python RAG_Project/Vector_Store/db.py
+  ```
+  *This ingests sample documents, embeds them using Mistral Embeddings, saves the vector data inside RAG_Project/chroma_db/, and executes a similarity query to verify successful semantic document retrieval.*
+
+### 6. Execute Main RAG Pipeline
 Run the main entrypoint to load `Big.pdf`, recursively chunk its pages, pass it into the Mistral model, and generate a dynamic summary:
 ```bash
 python RAG_Project/main.py
@@ -130,7 +149,7 @@ python RAG_Project/main.py
 - [x] Configure LLM models (Mistral AI integration).
 - [x] Design prompt structures for parsing extracted document pages.
 - [x] **Chunking & Splitting**: Add `RecursiveCharacterTextSplitter` to optimize token usage.
-- [ ] **Vector Ingestion**: Embed document chunks using `sentence-transformers` and save them to `ChromaDB`.
-- [ ] **Contextual Retrieval**: Implement semantic search query parsing to fetch only relevant chunks.
+- [x] **Vector Ingestion**: Embed document chunks using `MistralAIEmbeddings` and save them to local `ChromaDB`.
+- [x] **Contextual Retrieval**: Implement semantic search query parsing to fetch only relevant chunks.
 - [ ] **Hybrid Search / Re-ranking**: Optimize retrieval scores using advanced ranking strategies.
 - [ ] **Conversational UI**: Add a Streamlit visual dashboard for multi-turn questions & answers.

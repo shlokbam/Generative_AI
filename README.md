@@ -35,6 +35,10 @@ Generative_AI/
 │   │   ├── token_split.py        # TokenTextSplitter testing
 │   │   └── semantic_split.py     # RecursiveCharacterTextSplitter testing
 │   │
+│   ├── Vector_Store/             # 🗄️ Vector Database Storage & Indexing
+│   │   └── db.py                 # ChromaDB and MistralEmbeddings ingestion
+│   │
+│   ├── chroma_db/                # [Local Only - Git Ignored] Persisted vector records
 │   ├── Big.pdf                   # Large test corpus PDF for RAG pipeline ingestion
 │   ├── README.md                 # Detailed RAG project documentation & roadmap
 │   ├── main.py                   # Main RAG orchestration & summarization pipeline
@@ -77,9 +81,9 @@ The following functional units and configurations have been successfully impleme
 
 ---
 
-## 🛠️ RAG Project (Phase 1): Ingestion, Splitting & Model Orchestration
+## 🛠️ RAG Project (Phase 1): Ingestion, Splitting, Indexing & Orchestration
 
-A specialized **Retrieval-Augmented Generation (RAG)** pipeline designed to load, partition, template, and synthesize responses from local files using:
+A specialized **Retrieval-Augmented Generation (RAG)** pipeline designed to load, partition, embed, index, and synthesize responses using:
 * **Multi-Format Ingestion**: 
   * Integrated `PyPDFLoader` to load, parse, and partition mathematical research documents (e.g., `GRU.pdf` and `Big.pdf`) into discrete, metadata-rich page collections.
   * Integrated `TextLoader` to ingest unstructured plaintext assets (e.g., `notes.txt`) into memory-mappable document streams.
@@ -87,6 +91,10 @@ A specialized **Retrieval-Augmented Generation (RAG)** pipeline designed to load
 * **Document Chunking & Splitting**:
   * Implemented character, token, and recursive text partitioners (`CharacterTextSplitter`, `TokenTextSplitter`, `RecursiveCharacterTextSplitter`).
   * Utilizes `RecursiveCharacterTextSplitter` inside the main orchestration pipeline to structure text data into standardized semantic chunks (`chunk_size=1000`, `chunk_overlap=200`).
+* **Vector Database Ingestion, Indexing & Querying**:
+  * Integrated `MistralAIEmbeddings` using the `mistral-embed` model to represent raw textual chunks as high-dimensional mathematical vector spaces.
+  * Leveraged `Chroma` to persist, search, and manage document indexes locally inside `chroma_db/`.
+  * Implemented and executed semantic similarity searches (`similarity_search`) returning clean, formatted page contents and source metadata for the top matching records.
 * **Advanced Orchestration (`main.py`)**:
   * Coupled `python-dotenv` environment loaders with LangChain's `ChatMistralAI` to run highly optimized LLM invocations using `open-mistral-7b`.
   * Integrates recursive text splitters dynamically, formatting full document pages into custom `ChatPromptTemplate` instructions.
@@ -142,7 +150,11 @@ MISTRAL_API_KEY=your_mistral_api_key_here
    ```bash
    python RAG_Project/Test_splitter/semantic_split.py
    ```
-5. Run main summarization & chunking pipeline:
+5. Run vector store ingestion & similarity search test (ChromaDB):
+   ```bash
+   python RAG_Project/Vector_Store/db.py
+   ```
+6. Run main summarization & chunking pipeline:
    ```bash
    python RAG_Project/main.py
    ```
