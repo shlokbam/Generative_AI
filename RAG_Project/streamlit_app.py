@@ -1,4 +1,7 @@
 import os
+# Force pure-Python protobuf implementation to resolve cloud runtime compatibility conflicts
+os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
+
 import time
 import tempfile
 import streamlit as st
