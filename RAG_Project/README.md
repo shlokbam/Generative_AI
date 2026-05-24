@@ -18,6 +18,12 @@ RAG_Project/
 │   ├── test.py               # Isolated TextLoader test suite
 │   └── page.py               # WebBaseLoader URL content loader
 │
+├── Test_splitter/            # ✂️ Ingestion Text Splitting Experiments
+│   ├── char_split.py         # CharacterTextSplitter testing (notes.txt)
+│   ├── token_split.py        # TokenTextSplitter testing (GRU.pdf)
+│   └── semantic_split.py     # RecursiveCharacterTextSplitter testing (GRU.pdf)
+│
+├── Big.pdf                   # Large test corpus PDF for RAG pipeline ingestion
 ├── .env                      # [Local Only] API keys and config (Mistral, HuggingFace, Groq)
 ├── main.py                   # Main RAG orchestration & summarization pipeline
 └── requirements.txt          # Ingestion, embedding, LLM, and vector store dependencies
@@ -33,13 +39,20 @@ The ingestion pipeline is designed to process both structured, unstructured, and
 * **Plaintext Ingestion (`test.py`)**: Utilizes `TextLoader` to seamlessly convert standard `.txt` text corpora (`notes.txt`) into LangChain `Document` schemas ready for chunking and tokenization.
 * **HTML/Web Scraping Ingestion (`page.py`)**: Leverages LangChain's `WebBaseLoader` (utilizing `BeautifulSoup4`) to load, fetch, and extract raw textual content from live web URLs (e.g., product detail pages) into document structures, preparing the ground for hybrid data-sources.
 
-### 2. Intelligent Prompts & Orchestration (`main.py`) 🔗
-The main entry point ties document ingestion and model invocation together:
+### 2. Document Chunking & Text Splitting ✂️
+To maximize LLM context window efficiency and prepare content for semantic vector searches, we implemented three distinct chunking strategies:
+* **Character-Based Splitting (`char_split.py`)**: Uses `CharacterTextSplitter` to divide text files by strict character lengths (`chunk_size=10`) with specified overlapping parameters.
+* **Token-Based Splitting (`token_split.py`)**: Uses `TokenTextSplitter` powered by `tiktoken` to split documents precisely by token budgets (`chunk_size=1000`) rather than character bounds.
+* **Recursive Character Splitting (`semantic_split.py` & `main.py`)**: Employs `RecursiveCharacterTextSplitter` as the primary RAG splitter (`chunk_size=1000`, `chunk_overlap=200`). This recursively splits on formatting marks (`\n\n`, `\n`, space, and empty string) to maintain semantic cohesion and prevent paragraphs from being split awkwardly.
+
+### 3. Intelligent Prompts & Orchestration (`main.py`) 🔗
+The main entry point ties document ingestion, splitting, and model invocation together:
 * **Environment Synchronization**: Integrates `dotenv` to load environment keys without exposing credentials in the codebase.
+* **Recursive Splitting Integration**: Loads `Big.pdf`, splits it structurally using `RecursiveCharacterTextSplitter`, and integrates chunks into the context flow.
 * **Low-Latency LLM Pipeline**: Harnesses `ChatMistralAI` using the high-throughput `open-mistral-7b` model to evaluate loaded text structures.
 * **Custom Prompt Templating**: Features a dynamic `ChatPromptTemplate` that structures the instructions for the LLM (`"You are a AI that summarizs the text"`) and feeds in parsed document pages dynamically.
 
-### 3. Future-Proof Ingest System 🏗️
+### 4. Future-Proof Ingest System 🏗️
 The project dependencies are architected to support future RAG phases:
 * **Embeddings**: Prepared for HuggingFace local models via `sentence-transformers` and `langchain-huggingface`.
 * **Vector Store**: Pre-configured for high-speed local storage and search using `chromadb`.
@@ -83,8 +96,28 @@ pip install -r RAG_Project/requirements.txt
   ```
   *This targets a live URL, scrapes the webpage utilizing WebBaseLoader, and prints the raw page content.*
 
-### 4. Execute Main RAG Pipeline
-Run the main entrypoint to load the PDF, feed the concluding section into the Mistral model, and generate a dynamic summary:
+### 4. Run Text Splitting Tests ✂️
+
+* **Test Character Splitter**:
+  ```bash
+  python RAG_Project/Test_splitter/char_split.py
+  ```
+  *Splits Deep Learning notes by character increments.*
+
+* **Test Token Splitter**:
+  ```bash
+  python RAG_Project/Test_splitter/token_split.py
+  ```
+  *Splits GRU research paper strictly using token budgets.*
+
+* **Test Recursive Character Splitter**:
+  ```bash
+  python RAG_Project/Test_splitter/semantic_split.py
+  ```
+  *Splits GRU research paper recursively using structural boundaries.*
+
+### 5. Execute Main RAG Pipeline
+Run the main entrypoint to load `Big.pdf`, recursively chunk its pages, pass it into the Mistral model, and generate a dynamic summary:
 ```bash
 python RAG_Project/main.py
 ```
@@ -96,7 +129,7 @@ python RAG_Project/main.py
 - [x] Implement multi-format document loaders (`PyPDFLoader`, `TextLoader`, `WebBaseLoader`).
 - [x] Configure LLM models (Mistral AI integration).
 - [x] Design prompt structures for parsing extracted document pages.
-- [ ] **Chunking & Splitting**: Add `RecursiveCharacterTextSplitter` to optimize token usage.
+- [x] **Chunking & Splitting**: Add `RecursiveCharacterTextSplitter` to optimize token usage.
 - [ ] **Vector Ingestion**: Embed document chunks using `sentence-transformers` and save them to `ChromaDB`.
 - [ ] **Contextual Retrieval**: Implement semantic search query parsing to fetch only relevant chunks.
 - [ ] **Hybrid Search / Re-ranking**: Optimize retrieval scores using advanced ranking strategies.

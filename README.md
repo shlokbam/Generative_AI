@@ -30,6 +30,12 @@ Generative_AI/
 │   │   ├── test.py               # TextLoader integration
 │   │   └── page.py               # WebBaseLoader URL content loader
 │   │
+│   ├── Test_splitter/            # ✂️ Ingestion Text Splitting Experiments
+│   │   ├── char_split.py         # CharacterTextSplitter testing
+│   │   ├── token_split.py        # TokenTextSplitter testing
+│   │   └── semantic_split.py     # RecursiveCharacterTextSplitter testing
+│   │
+│   ├── Big.pdf                   # Large test corpus PDF for RAG pipeline ingestion
 │   ├── README.md                 # Detailed RAG project documentation & roadmap
 │   ├── main.py                   # Main RAG orchestration & summarization pipeline
 │   └── requirements.txt          # Ingestion, embedding, LLM, and vector database packages
@@ -71,16 +77,19 @@ The following functional units and configurations have been successfully impleme
 
 ---
 
-## 🛠️ RAG Project (Phase 1): Ingestion & Model Orchestration
+## 🛠️ RAG Project (Phase 1): Ingestion, Splitting & Model Orchestration
 
-A specialized **Retrieval-Augmented Generation (RAG)** pipeline designed to load, parse, template, and synthesize responses from local files using:
+A specialized **Retrieval-Augmented Generation (RAG)** pipeline designed to load, partition, template, and synthesize responses from local files using:
 * **Multi-Format Ingestion**: 
-  * Integrated `PyPDFLoader` to load, parse, and partition mathematical research documents (e.g., `GRU.pdf`) into discrete, metadata-rich page collections.
+  * Integrated `PyPDFLoader` to load, parse, and partition mathematical research documents (e.g., `GRU.pdf` and `Big.pdf`) into discrete, metadata-rich page collections.
   * Integrated `TextLoader` to ingest unstructured plaintext assets (e.g., `notes.txt`) into memory-mappable document streams.
-  * Integrated `WebBaseLoader` to pull and extract raw textual document streams directly from live website URLs (e.g., MacBook Pro specs).
+  * Integrated `WebBaseLoader` to pull and extract raw textual document streams directly from live website URLs.
+* **Document Chunking & Splitting**:
+  * Implemented character, token, and recursive text partitioners (`CharacterTextSplitter`, `TokenTextSplitter`, `RecursiveCharacterTextSplitter`).
+  * Utilizes `RecursiveCharacterTextSplitter` inside the main orchestration pipeline to structure text data into standardized semantic chunks (`chunk_size=1000`, `chunk_overlap=200`).
 * **Advanced Orchestration (`main.py`)**:
   * Coupled `python-dotenv` environment loaders with LangChain's `ChatMistralAI` to run highly optimized LLM invocations using `open-mistral-7b`.
-  * Built custom prompt engineering flows utilizing `ChatPromptTemplate` to summarize specific document indexes dynamically.
+  * Integrates recursive text splitters dynamically, formatting full document pages into custom `ChatPromptTemplate` instructions.
 
 ---
 
@@ -129,7 +138,11 @@ MISTRAL_API_KEY=your_mistral_api_key_here
    ```bash
    python RAG_Project/document_loaders/page.py
    ```
-4. Run main summarization pipeline:
+4. Run text splitters test (Recursive Character):
+   ```bash
+   python RAG_Project/Test_splitter/semantic_split.py
+   ```
+5. Run main summarization & chunking pipeline:
    ```bash
    python RAG_Project/main.py
    ```
