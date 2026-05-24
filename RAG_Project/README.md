@@ -26,6 +26,11 @@ RAG_Project/
 ├── Vector_Store/             # 🗄️ Vector Database Storage & Indexing
 │   └── db.py                 # ChromaDB and MistralEmbeddings ingestion pipeline
 │
+├── Retrievers/               # 🔍 Advanced Document Retrieval Modules
+│   ├── Arixv.py              # ArxivRetriever search (LLMs search testing)
+│   ├── Mmr.py                # Similarity vs Maximal Marginal Relevance testing
+│   └── Multiquery.py         # MultiQueryRetriever query perspective expansion
+│
 ├── chroma_db/                # [Local Only - Git Ignored] Persisted vector records
 ├── Big.pdf                   # Large test corpus PDF for RAG pipeline ingestion
 ├── .env                      # [Local Only] API keys and config (Mistral, HuggingFace, Groq)
@@ -68,7 +73,13 @@ A streamlined interface to quickly evaluate base model answers:
 * **Mistral Integration**: Couples `python-dotenv` environment loaders with LangChain's `ChatMistralAI` to run base model inferences (`open-mistral-7b`).
 * **Prompt Structuring**: Combines `ChatPromptTemplate` instructions dynamically to test basic prompt responsiveness.
 
-### 6. Future-Proof Ingest System 🏗️
+### 6. Advanced Retrieval Strategies (`Retrievers/`) 🔍
+An index query-expansion and relevance optimization layer to maximize retrieval coverage:
+* **Arxiv Search Retriever (`Arixv.py`)**: Harnesses `ArxivRetriever` and the `arxiv` Python API to fetch peer-reviewed research papers (e.g. searching "Large Language Models") and display metadata details (Title, Authors, Summaries). Bypasses SSL and redirection limitations natively.
+* **Maximal Marginal Relevance (MMR) (`Mmr.py`)**: Contrasts standard `similarity` retrievers with `mmr` retrievers. MMR selects document chunks using high-dimensional angles to maximize relevance while penalizing content redundancy, ensuring a highly diverse context selection for the LLM.
+* **Multi-Query Retriever (`Multiquery.py`)**: Utilizes `MultiQueryRetriever.from_llm` powered by `ChatMistralAI` (`mistral-small-latest`) to expand a single user query into multiple semantic prompt perspectives, capturing a wider range of relevant vector space coordinates.
+
+### 7. Future-Proof Ingest System 🏗️
 The project dependencies are architected to support future RAG phases:
 * **Embeddings**: Prepared for HuggingFace local models via `sentence-transformers` and `langchain-huggingface`.
 * **Vector Store**: Pre-configured for high-speed local storage and search using `chromadb`.
@@ -148,7 +159,27 @@ pip install -r RAG_Project/requirements.txt
   ```
   *This reads the large Big.pdf document, chunks its pages recursively, generates embeddings, and constructs your persistent chroma_db vector store.*
 
-### 7. Execute Prompt Testing Pipeline 💬
+### 7. Run Advanced Retrieval Pipelines 🔍
+
+* **Test Arxiv Search Integration**:
+  ```bash
+  python RAG_Project/Retrievers/Arixv.py
+  ```
+  *Queries ArXiv's live database for paper listings and prints parsed details.*
+
+* **Test Similarity vs. MMR Retrieval Diversity**:
+  ```bash
+  python RAG_Project/Retrievers/Mmr.py
+  ```
+  *Builds a transient index and displays side-by-side comparative results between basic search and Maximal Marginal Relevance.*
+
+* **Test Multi-Query Prompt Expansion**:
+  ```bash
+  python RAG_Project/Retrievers/Multiquery.py
+  ```
+  *Automates query perspective creation using ChatMistralAI to expand database hit scores.*
+
+### 8. Execute Prompt Testing Pipeline 💬
 
 * **Run Simplified LLM Prompter**:
   ```bash

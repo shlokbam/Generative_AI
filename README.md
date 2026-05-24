@@ -38,6 +38,11 @@ Generative_AI/
 │   ├── Vector_Store/             # 🗄️ Vector Database Storage & Indexing
 │   │   └── db.py                 # ChromaDB and MistralEmbeddings ingestion
 │   │
+│   ├── Retrievers/               # 🔍 Advanced Document Retrieval Modules
+│   │   ├── Arixv.py              # ArxivRetriever search testing
+│   │   ├── Mmr.py                # Similarity vs MMR diversity comparison
+│   │   └── Multiquery.py         # MultiQueryRetriever expansion
+│   │
 │   ├── chroma_db/                # [Local Only - Git Ignored] Persisted vector records
 │   ├── Big.pdf                   # Large test corpus PDF for RAG pipeline ingestion
 │   ├── README.md                 # Detailed RAG project documentation & roadmap
@@ -96,6 +101,10 @@ A specialized **Retrieval-Augmented Generation (RAG)** pipeline designed to load
   * Integrated `MistralAIEmbeddings` using the `mistral-embed` model to represent raw textual chunks as high-dimensional mathematical vector spaces.
   * Leveraged `Chroma` to persist, search, and manage document indexes locally inside `chroma_db/`.
   * Implemented and executed semantic similarity searches (`similarity_search`) returning clean, formatted page contents and source metadata for the top matching records.
+* **Advanced Contextual Retrieval Strategies**:
+  * Added `ArxivRetriever` (`Arixv.py`) for live API queries. Bypassed rate limits and redirects via custom HTTPS configurations.
+  * Added Maximal Marginal Relevance (MMR) retrieval (`Mmr.py`) to reduce duplication by weighting chunk diversity.
+  * Added Multi-Query Expansion (`Multiquery.py`) powered by `ChatMistralAI` to automatically generate multiple query perspectives and maximize database match rates.
 * **Advanced Orchestration & Prompting**:
   * Added `Database.py` as the official, standalone vector database build pipeline which handles parsing `Big.pdf`, splitting chunks semantically, and indexing vectors inside local Chroma storage.
   * Streamlined `main.py` into a clean base LLM testing suite invoking ChatMistralAI (`open-mistral-7b`) with dynamic prompts to verify model answers.
@@ -155,11 +164,15 @@ MISTRAL_API_KEY=your_mistral_api_key_here
    ```bash
    python RAG_Project/Vector_Store/db.py
    ```
-6. Build and populate your RAG vector database (Big.pdf):
+6. Run advanced retrievers tests (MultiQuery, MMR, ArXiv):
+   ```bash
+   python RAG_Project/Retrievers/Multiquery.py
+   ```
+7. Build and populate your RAG vector database (Big.pdf):
    ```bash
    python RAG_Project/Database.py
    ```
-7. Run chatbot prompt testing:
+8. Run chatbot prompt testing:
    ```bash
    python RAG_Project/main.py
    ```
