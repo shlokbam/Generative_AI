@@ -41,7 +41,8 @@ Generative_AI/
 │   ├── chroma_db/                # [Local Only - Git Ignored] Persisted vector records
 │   ├── Big.pdf                   # Large test corpus PDF for RAG pipeline ingestion
 │   ├── README.md                 # Detailed RAG project documentation & roadmap
-│   ├── main.py                   # Main RAG orchestration & summarization pipeline
+│   ├── Database.py               # Main Vector Database build & ingestion pipeline
+│   ├── main.py                   # Clean LLM chat & prompt testing module
 │   └── requirements.txt          # Ingestion, embedding, LLM, and vector database packages
 │
 ├── Video_1/                      # 🎥 Foundations & Streamlit Chatbot
@@ -95,9 +96,9 @@ A specialized **Retrieval-Augmented Generation (RAG)** pipeline designed to load
   * Integrated `MistralAIEmbeddings` using the `mistral-embed` model to represent raw textual chunks as high-dimensional mathematical vector spaces.
   * Leveraged `Chroma` to persist, search, and manage document indexes locally inside `chroma_db/`.
   * Implemented and executed semantic similarity searches (`similarity_search`) returning clean, formatted page contents and source metadata for the top matching records.
-* **Advanced Orchestration (`main.py`)**:
-  * Coupled `python-dotenv` environment loaders with LangChain's `ChatMistralAI` to run highly optimized LLM invocations using `open-mistral-7b`.
-  * Integrates recursive text splitters dynamically, formatting full document pages into custom `ChatPromptTemplate` instructions.
+* **Advanced Orchestration & Prompting**:
+  * Added `Database.py` as the official, standalone vector database build pipeline which handles parsing `Big.pdf`, splitting chunks semantically, and indexing vectors inside local Chroma storage.
+  * Streamlined `main.py` into a clean base LLM testing suite invoking ChatMistralAI (`open-mistral-7b`) with dynamic prompts to verify model answers.
 
 ---
 
@@ -154,7 +155,11 @@ MISTRAL_API_KEY=your_mistral_api_key_here
    ```bash
    python RAG_Project/Vector_Store/db.py
    ```
-6. Run main summarization & chunking pipeline:
+6. Build and populate your RAG vector database (Big.pdf):
+   ```bash
+   python RAG_Project/Database.py
+   ```
+7. Run chatbot prompt testing:
    ```bash
    python RAG_Project/main.py
    ```

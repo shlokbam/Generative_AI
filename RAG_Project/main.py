@@ -13,20 +13,6 @@ llm = ChatMistralAI(
     temperature=0.1,
 )
 
-file_path = "/Users/shlokbam/Documents/Code/Generative_AI/RAG_Project/Big.pdf"
-
-data = PyPDFLoader(file_path)
-
-docs = data.load()
-
-
-splitted_docs = RecursiveCharacterTextSplitter(
-    chunk_size=1000,
-    chunk_overlap=200
-)
-
-chunks = splitted_docs.split_documents(docs)
-
 template = ChatPromptTemplate.from_messages(
     [
         ("system", "You are a AI that summarizs the text"),
@@ -34,7 +20,7 @@ template = ChatPromptTemplate.from_messages(
     ]
 )
 
-prompt = template.format_messages(data=docs)
+prompt = template.format_messages(data="What is the capital of France?")
 
 response = llm.invoke(prompt)
 print(response.content)

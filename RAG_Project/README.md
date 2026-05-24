@@ -29,7 +29,8 @@ RAG_Project/
 ├── chroma_db/                # [Local Only - Git Ignored] Persisted vector records
 ├── Big.pdf                   # Large test corpus PDF for RAG pipeline ingestion
 ├── .env                      # [Local Only] API keys and config (Mistral, HuggingFace, Groq)
-├── main.py                   # Main RAG orchestration & summarization pipeline
+├── Database.py               # 🚀 Main Vector Database build & ingestion pipeline
+├── main.py                   # 💬 Clean LLM chat & prompt testing module
 └── requirements.txt          # Ingestion, embedding, LLM, and vector store dependencies
 ```
 
@@ -56,14 +57,18 @@ To store chunks securely and enable fast, semantically accurate document retriev
 * **Semantic Similarity Search**: Validated the retrieval layer by executing query-based similarity searches (`vectorstore.similarity_search("What is used for data analysis?", k=2)`), outputting clean, structured page contents and source metadata for top matching records.
 * **Environment Integrity**: Confined the generated SQLite database binaries within local storage using Git ignore rules, keeping your version control repository lightweight and secure.
 
-### 4. Intelligent Prompts & Orchestration (`main.py`) 🔗
-The main entry point ties document ingestion, splitting, and model invocation together:
-* **Environment Synchronization**: Integrates `dotenv` to load environment keys without exposing credentials in the codebase.
-* **Recursive Splitting Integration**: Loads `Big.pdf`, splits it structurally using `RecursiveCharacterTextSplitter`, and integrates chunks into the context flow.
-* **Low-Latency LLM Pipeline**: Harnesses `ChatMistralAI` using the high-throughput `open-mistral-7b` model to evaluate loaded text structures.
-* **Custom Prompt Templating**: Features a dynamic `ChatPromptTemplate` that structures the instructions for the LLM (`"You are a AI that summarizs the text"`) and feeds in parsed document pages dynamically.
+### 4. Vector Database Builder Pipeline (`Database.py`) 🚀
+A dedicated end-to-end database constructor script:
+* **Large Corpus Loading**: Ingests the `Big.pdf` document corpus using `PyPDFLoader`.
+* **Standardized Splitting**: Divides the loaded document recursively using `RecursiveCharacterTextSplitter` (`chunk_size=1000`, `chunk_overlap=200`).
+* **Embeddings & Persistence**: Embeds the chunks using `MistralAIEmbeddings` (`mistral-embed`) and writes them directly into the persistent local store directory (`RAG_Project/chroma_db/`).
 
-### 5. Future-Proof Ingest System 🏗️
+### 5. Simplified Prompt Testing Interface (`main.py`) 💬
+A streamlined interface to quickly evaluate base model answers:
+* **Mistral Integration**: Couples `python-dotenv` environment loaders with LangChain's `ChatMistralAI` to run base model inferences (`open-mistral-7b`).
+* **Prompt Structuring**: Combines `ChatPromptTemplate` instructions dynamically to test basic prompt responsiveness.
+
+### 6. Future-Proof Ingest System 🏗️
 The project dependencies are architected to support future RAG phases:
 * **Embeddings**: Prepared for HuggingFace local models via `sentence-transformers` and `langchain-huggingface`.
 * **Vector Store**: Pre-configured for high-speed local storage and search using `chromadb`.
@@ -129,17 +134,27 @@ pip install -r RAG_Project/requirements.txt
 
 ### 5. Run Vector Database Ingestions & Similarity Queries 🗄️
 
-* **Test ChromaDB Vector Store Ingest & Retrieval**:
+* **Test ChromaDB Experimental Ingest & Retrieval**:
   ```bash
   python RAG_Project/Vector_Store/db.py
   ```
-  *This ingests sample documents, embeds them using Mistral Embeddings, saves the vector data inside RAG_Project/chroma_db/, and executes a similarity query to verify successful semantic document retrieval.*
+  *This runs experimental ingestions on raw documents, embeds them, and executes a similarity query.*
 
-### 6. Execute Main RAG Pipeline
-Run the main entrypoint to load `Big.pdf`, recursively chunk its pages, pass it into the Mistral model, and generate a dynamic summary:
-```bash
-python RAG_Project/main.py
-```
+### 6. Run Official Vector Database Build Pipeline 🚀
+
+* **Populate RAG Vector Store with Big.pdf**:
+  ```bash
+  python RAG_Project/Database.py
+  ```
+  *This reads the large Big.pdf document, chunks its pages recursively, generates embeddings, and constructs your persistent chroma_db vector store.*
+
+### 7. Execute Prompt Testing Pipeline 💬
+
+* **Run Simplified LLM Prompter**:
+  ```bash
+  python RAG_Project/main.py
+  ```
+  *This invokes the open-mistral-7b model using standard prompts to verify base connectivity.*
 
 ---
 
