@@ -74,12 +74,15 @@ A streamlined interface to quickly evaluate base model answers:
 * **Mistral Integration**: Couples `python-dotenv` environment loaders with LangChain's `ChatMistralAI` to run base model inferences (`open-mistral-7b`).
 * **Prompt Structuring**: Combines `ChatPromptTemplate` instructions dynamically to test basic prompt responsiveness.
 
-### 6. Premium Conversational RAG Web Interface (`streamlit_app.py`) 💻
-A highly sophisticated, state-of-the-art Streamlit Web UI designed around modern UI/UX principles and mapping precisely to `main.py`'s query flow:
-* **Rich Glassmorphism Style**: Translucent containers with subtle border shadows, deep dark radial gradients, and custom modern typography (Outfit/Space Grotesk).
-* **Multi-Turn Persistent Chat**: Keeps an interactive, continuous conversation flow in session states, rendering user and assistant bubbles with specific avatar alignments.
-* **Citations & Document Viewer**: Employs expandable cards to reveal retrieved document snippets and source locations alongside generative responses in real-time.
-* **Sidebar Tuning Console**: Provides sliders and dropdowns to adjust LLM models, creativity temperature, search modes (MMR vs. Similarity), k-chunk counts, and diversity variables (`fetch_k`, `lambda`) on the fly.
+### 6. Premium Conversational Dynamic RAG Web Interface (`streamlit_app.py`) 💻
+A highly sophisticated, state-of-the-art Streamlit Web UI designed around modern UI/UX principles:
+* **Dynamic PDF Upload & Ingest**: Allows drag-and-drop file uploading directly into the interface. It parses files on the fly, partitions text recursively into semantic blocks, embeds them, and holds them securely in an in-memory vector store without requiring local pre-indexing.
+* **Smart Session Caching**: Employs robust cached states so that dynamic PDF processing is done only once upon upload, avoiding unnecessary re-ingestion, latency, and Mistral API usage on subsequent prompts.
+* **Document Insight Dashboard**: Displays a premium HTML card visualizing parsed metrics: name, size, parsed page count, total generated chunks, and parsing duration.
+* **Rich Glassmorphism Style**: Translucent containers with subtle border shadows, deep dark radial gradients, custom scrollbars, and modern custom typography (Outfit/Space Grotesk).
+* **Multi-Turn Persistent Chat & Citations**: Maintains conversation logs in session memory and renders expandable citation modules detailing the precise page source content for every answer.
+* **Sidebar Tuning Console**: Adjusts retrieval parameters (`k`, `fetch_k`, `lambda`) and LLM properties (model, creativity temperature) dynamically.
+
 
 ### 6. Advanced Retrieval Strategies (`Retrievers/`) 🔍
 An index query-expansion and relevance optimization layer to maximize retrieval coverage:
@@ -202,6 +205,44 @@ pip install -r RAG_Project/requirements.txt
   streamlit run RAG_Project/streamlit_app.py
   ```
   *This launches the dedicated Streamlit UI mapping directly to main.py's logic, equipped with interactive sidebar controls, radial dark theme, and visual citations (defaults to http://localhost:8501).*
+
+## 🌐 Production Cloud Deployment
+
+You can deploy this application for free in minutes using either **Streamlit Community Cloud** or **Hugging Face Spaces**.
+
+### Option A: Streamlit Community Cloud (Recommended)
+1. **GitHub Repository**: Push your code to a GitHub repository.
+2. **Launch Cloud Console**: Go to [share.streamlit.io](https://share.streamlit.io/) and log in with your GitHub account.
+3. **New App Deployment**: Click **Deploy an app**, then select your repository, branch, and set the entrypoint path to:
+   ```text
+   RAG_Project/streamlit_app.py
+   ```
+4. **Configure API Keys (Secrets)**:
+   * Click **Advanced settings** or open the app settings console once deployed.
+   * Go to **Secrets** and configure your Mistral AI Key:
+     ```toml
+     MISTRAL_API_KEY = "your-mistral-api-key-here"
+     ```
+5. **Launch**: Click **Deploy**! Your app will be live with a secure public URL.
+
+---
+
+### Option B: Hugging Face Spaces
+1. **Create Space**: Visit [huggingface.co/spaces](https://huggingface.co/spaces) and click **Create new Space**.
+2. **Configure SDK**:
+   * Name your space.
+   * Select **Streamlit** as the SDK.
+   * Choose the **Blank** template and select the free CPU tier.
+3. **Upload/Commit Files**:
+   * Clone the created Space repository locally, copy the contents of the `RAG_Project` directory, and push, OR upload the files directly via Hugging Face's web interface.
+   * *Note: The `requirements.txt` must be at the root of the Space repository. If you are uploading the `RAG_Project` contents as the root of the space, make sure `streamlit_app.py`, `requirements.txt`, and `.streamlit/config.toml` are correctly placed.*
+4. **Configure Secrets**:
+   * In your Space dashboard, go to the **Settings** tab.
+   * Scroll down to **Variables and secrets** and click **New secret**.
+   * Define:
+     * Name: `MISTRAL_API_KEY`
+     * Value: `your-actual-mistral-api-key`
+5. **Access**: Hugging Face will automatically build and deploy your container!
 
 ---
 

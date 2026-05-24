@@ -1,10 +1,13 @@
 import os
 import time
+import tempfile
 import streamlit as st
 from dotenv import load_dotenv
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_community.vectorstores import Chroma
 from langchain_mistralai import ChatMistralAI, MistralAIEmbeddings
+from langchain_community.document_loaders import PyPDFLoader
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 # 1. Page Configuration (Must be first Streamlit call)
 st.set_page_config(
@@ -16,6 +19,9 @@ st.set_page_config(
 
 # Load environment keys
 load_dotenv()
+
+# Check for environment Mistral API Key (for fallback/local testing)
+env_mistral_key = os.environ.get("MISTRAL_API_KEY")
 
 # 2. Premium Design System & Styles (Dark Mode, Neon Accents, Glassmorphism & Custom Animations)
 st.markdown("""
@@ -151,6 +157,84 @@ st.markdown("""
         white-space: pre-wrap;
     }
 
+    /* Dynamic Document Info Card */
+    .doc-info-card {
+        background: rgba(129, 140, 248, 0.04);
+        border: 1px solid rgba(129, 140, 248, 0.18);
+        border-radius: 16px;
+        padding: 1.25rem;
+        margin-top: 1rem;
+        margin-bottom: 2rem;
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        animation: fadeInUp 0.5s ease;
+    }
+
+    .doc-info-header {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #a78bfa;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+    }
+
+    .doc-info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+
+    .doc-info-item {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.04);
+        border-radius: 10px;
+        padding: 0.75rem 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .doc-info-item:hover {
+        background: rgba(255, 255, 255, 0.04);
+        border-color: rgba(129, 140, 248, 0.2);
+    }
+
+    .doc-info-label {
+        font-size: 0.75rem;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        margin-bottom: 0.3rem;
+        font-weight: 600;
+    }
+
+    .doc-info-value {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #f8fafc;
+        word-break: break-all;
+    }
+
+    /* Empty state layout */
+    .empty-state-container {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: rgba(255, 255, 255, 0.015);
+        border: 2px dashed rgba(129, 140, 248, 0.15);
+        border-radius: 24px;
+        margin-top: 1.5rem;
+        box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.2);
+        animation: fadeInUp 0.6s ease;
+    }
+
+    .empty-state-icon {
+        font-size: 4rem;
+        margin-bottom: 1.25rem;
+        animation: pulseIcon 2.2s infinite ease-in-out;
+    }
+
     /* Micro-animations */
     @keyframes fadeInUp {
         from {
@@ -161,6 +245,12 @@ st.markdown("""
             opacity: 1;
             transform: translateY(0);
         }
+    }
+
+    @keyframes pulseIcon {
+        0% { transform: scale(1); opacity: 0.85; filter: drop-shadow(0 0 0px rgba(129,140,248,0)); }
+        50% { transform: scale(1.06); opacity: 1; filter: drop-shadow(0 0 15px rgba(129,140,248,0.45)); }
+        100% { transform: scale(1); opacity: 0.85; filter: drop-shadow(0 0 0px rgba(129,140,248,0)); }
     }
 
     /* Custom scrollbar */
@@ -183,10 +273,24 @@ st.markdown("""
 
 # 3. Sidebar Control Panel Configuration
 st.sidebar.markdown("<h2 style='color: #818cf8; margin-top: 0.5rem;'>🛠️ Control Panel</h2>", unsafe_allow_html=True)
-st.sidebar.markdown("Tailor retrieval parameters & LLM configurations below.")
+st.sidebar.markdown("Configure authentication & search properties.")
 st.sidebar.markdown("---")
 
+# Section: User API Key input
+st.sidebar.markdown("### 🔑 API Authentication")
+user_api_key = st.sidebar.text_input(
+    "Mistral API Key",
+    type="password",
+    value="",
+    placeholder="Paste your MISTRAL_API_KEY...",
+    help="Your API Key is processed securely in memory and is never saved on our servers. Get one at console.mistral.ai."
+)
+
+# Active API key evaluation (user text input overrides environment fallback)
+active_key = user_api_key.strip() if user_api_key.strip() else env_mistral_key
+
 # Section A: Retriever settings
+st.sidebar.markdown("---")
 st.sidebar.markdown("### 🔍 Ingestion & Search")
 search_strategy = st.sidebar.selectbox(
     "Search Algorithm",
@@ -245,16 +349,12 @@ temperature = st.sidebar.slider(
 
 st.sidebar.markdown("---")
 
-# Display Vector Database Status
-st.sidebar.markdown("### 🗄️ Database Directory")
-current_dir = os.path.dirname(os.path.abspath(__file__))
-persist_dir = os.path.join(current_dir, "chroma_db")
-st.sidebar.code(persist_dir, language="bash")
-
-if os.path.exists(persist_dir):
-    st.sidebar.success("🟢 Vector DB Connected")
+# Display Document Status in Sidebar
+st.sidebar.markdown("### 🗄️ Ingestion Status")
+if "processed_file_name" in st.session_state and st.session_state.processed_file_name:
+    st.sidebar.success(f"🟢 Active: {st.session_state.processed_file_name}")
 else:
-    st.sidebar.error("🔴 Vector DB Not Found")
+    st.sidebar.error("🔴 No Document Active")
 
 # Section C: Reset Action
 if st.sidebar.button("🗑️ Clear Chat History", use_container_width=True):
@@ -263,182 +363,319 @@ if st.sidebar.button("🗑️ Clear Chat History", use_container_width=True):
 
 # 4. Main App Layout & Header
 st.markdown("<h1 class='hero-title'>RAG Insight Engine</h1>", unsafe_allow_html=True)
-st.markdown("<p class='hero-subtitle'>Interactive conversational assistant powering context-grounded intelligence from your Vector DB</p>", unsafe_allow_html=True)
+st.markdown("<p class='hero-subtitle'>Dynamic document-grounded intelligence powered by in-memory Vector DB & Mistral AI</p>", unsafe_allow_html=True)
 
-# Initialize messages in session state
+# Initialize Session State Variables
 if "messages" not in st.session_state:
     st.session_state.messages = []
+if "vectorstore" not in st.session_state:
+    st.session_state.vectorstore = None
+if "processed_file_name" not in st.session_state:
+    st.session_state.processed_file_name = None
+if "doc_info" not in st.session_state:
+    st.session_state.doc_info = None
 
-# Cache resources for database loading
-@st.cache_resource
-def load_chroma_db(path):
-    if not os.path.exists(path):
-        return None
+# PDF Processing Pipeline function
+def process_uploaded_pdf(uploaded_file, api_key):
     try:
-        embeddings = MistralAIEmbeddings(model="mistral-embed")
-        vectorstore = Chroma(
-            persist_directory=path,
-            embedding_function=embeddings
+        t_start = time.time()
+        # Save file to a secure temporary path
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
+            tmp_file.write(uploaded_file.getvalue())
+            tmp_file_path = tmp_file.name
+        
+        # Load PDF
+        loader = PyPDFLoader(tmp_file_path)
+        docs = loader.load()
+        num_pages = len(docs)
+        
+        # Clean up temporary file
+        try:
+            os.unlink(tmp_file_path)
+        except OSError:
+            pass
+        
+        # Split text into chunks
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=1000,
+            chunk_overlap=200
         )
-        return vectorstore
+        chunks = text_splitter.split_documents(docs)
+        num_chunks = len(chunks)
+        
+        # Build ephemeral Chroma Vector Store
+        embeddings = MistralAIEmbeddings(mistral_api_key=api_key, model="mistral-embed")
+        vectorstore = Chroma.from_documents(
+            documents=chunks,
+            embedding=embeddings
+        )
+        
+        t_duration = time.time() - t_start
+        return vectorstore, num_pages, num_chunks, t_duration
     except Exception as e:
-        st.error(f"Failed to load database: {str(e)}")
-        return None
+        st.error(f"Error parsing PDF: {str(e)}")
+        return None, 0, 0, 0.0
 
-# Load Vector Database
-vectorstore = load_chroma_db(persist_dir)
-
-if vectorstore is None:
-    st.markdown(f"""
-    <div style="background-color: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; border-radius: 12px; padding: 1.5rem; margin-top: 1.5rem;">
-        <h4 style="color: #f87171; margin-top: 0;">⚠️ Ingestion Pipeline Index Missing</h4>
-        <p style="color: #fca5a5; margin-bottom: 1rem;">
-            Chroma vector storage folder was not detected at: <code>{persist_dir}</code>.
-            Please populate your database first by running your builder script:
+# 5. Core Interface Flow
+if not active_key:
+    # Render premium API Key Required notice
+    st.markdown("""
+    <div style="background-color: rgba(129, 140, 248, 0.06); border: 1px solid rgba(129, 140, 248, 0.2); border-radius: 20px; padding: 2.5rem; text-align: center; margin-top: 1.5rem; box-shadow: 0 10px 40px rgba(0,0,0,0.3); animation: fadeInUp 0.5s ease;">
+        <div style="font-size: 3.5rem; margin-bottom: 1.25rem; animation: pulseKey 2s infinite ease-in-out;">🔑</div>
+        <h3 style="color: #818cf8; margin-top: 0; font-family: 'Space Grotesk', sans-serif; font-size: 1.6rem; letter-spacing: -0.5px;">Mistral API Key Required</h3>
+        <p style="color: #cbd5e1; font-size: 1rem; line-height: 1.6; max-width: 580px; margin: 0 auto 1.75rem auto; font-weight: 300;">
+            To ingest documents and generate intelligent answers, please enter your personal <strong>Mistral API Key</strong> in the sidebar Control Panel. Your key remains safe, in-session, and is never shared or stored.
         </p>
-        <pre style="background-color: rgba(0, 0, 0, 0.4); border-radius: 6px; padding: 0.75rem; color: #f8fafc; font-family: monospace;">python RAG_Project/Database.py</pre>
+        <div style="display: flex; justify-content: center; gap: 1rem;">
+            <a href="https://console.mistral.ai/" target="_blank" style="background: linear-gradient(135deg, #818cf8 0%, #c084fc 100%); color: white; padding: 0.7rem 1.4rem; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 0.95rem; box-shadow: 0 4px 15px rgba(129, 140, 248, 0.35); transition: all 0.3s ease;">
+                Get a Mistral API Key 🚀
+            </a>
+        </div>
     </div>
+    <style>
+        @keyframes pulseKey {
+            0% { transform: scale(1); filter: drop-shadow(0 0 0px rgba(129,140,248,0)); }
+            50% { transform: scale(1.08); filter: drop-shadow(0 0 12px rgba(129,140,248,0.4)); }
+            100% { transform: scale(1); filter: drop-shadow(0 0 0px rgba(129,140,248,0)); }
+        }
+    </style>
     """, unsafe_allow_html=True)
 else:
-    # 5. Build Dynamic Retriever Configuration
-    if search_strategy == "mmr":
-        retriever = vectorstore.as_retriever(
-            search_type="mmr",
-            search_kwargs={
-                "k": k_chunks,
-                "fetch_k": fetch_k,
-                "lambda_mult": lambda_mult
-            }
-        )
-    else:
-        retriever = vectorstore.as_retriever(
-            search_type="similarity",
-            search_kwargs={
-                "k": k_chunks
-            }
-        )
-
-    # Setup Generative LLM with chosen parameters
-    llm = ChatMistralAI(
-        model=llm_model,
-        temperature=temperature
+    # Render File Uploader when API key is active
+    uploaded_file = st.file_uploader(
+        "Drag & drop or browse for a PDF document to analyze",
+        type=["pdf"],
+        help="We will parse the file, calculate semantic vector embeddings, and prepare your context-grounded session."
     )
 
-    # Prompt Template matching main.py guidelines
-    prompt_template = ChatPromptTemplate.from_messages(
-        [
-            (
-                "system",
-                """You are a helpful AI assistant.
-
-                Use ONLY the provided context to answer the question.
-
-                If the answer is not present in the context,
-                say: "I could not find the answer in the document."
+    # Handle Ingestion Logic on Upload State Switch
+    if uploaded_file is not None:
+        # If it is a completely new file or nothing has been loaded
+        if st.session_state.processed_file_name != uploaded_file.name or st.session_state.vectorstore is None:
+            with st.spinner("🧠 Initializing Ingestion: Parsing, chunking, and embedding document..."):
+                vstore, pages, chunks, duration = process_uploaded_pdf(uploaded_file, active_key)
                 
-                Keep your answers highly detailed and professional, directly referencing details from the context.
-                """
-            ),
-            (
-                "human",
-                """Context:
-                {context}
+                if vstore is not None:
+                    # Update Session State with details
+                    st.session_state.vectorstore = vstore
+                    st.session_state.processed_file_name = uploaded_file.name
+                    
+                    # Format file size nicely
+                    size_bytes = uploaded_file.size
+                    if size_bytes < 1024 * 1024:
+                        formatted_size = f"{size_bytes / 1024:.1f} KB"
+                    else:
+                        formatted_size = f"{size_bytes / (1024 * 1024):.2f} MB"
+                    
+                    st.session_state.doc_info = {
+                        "file_name": uploaded_file.name,
+                        "file_size": formatted_size,
+                        "pages": pages,
+                        "chunks": chunks,
+                        "duration": f"{duration:.2f}s"
+                    }
+                    
+                    # Reset chat history for the fresh document
+                    st.session_state.messages = []
+                    st.toast("🎉 Document successfully ingested and embedded!", icon="✅")
+                    time.sleep(0.5)
+                    st.rerun()
+    else:
+        # Reset State if the file is explicitly cleared/removed
+        if st.session_state.processed_file_name is not None:
+            st.session_state.vectorstore = None
+            st.session_state.processed_file_name = None
+            st.session_state.doc_info = None
+            st.session_state.messages = []
+            st.rerun()
 
-                Question:
-                {question}
-                """
-            )
-        ]
-    )
-
-    # 6. Render Extant Message History
-    for msg in st.session_state.messages:
-        role_class = "user-bubble" if msg["role"] == "user" else "assistant-bubble"
-        meta_class = "user-meta" if msg["role"] == "user" else "assistant-meta"
-        meta_label = "User Query" if msg["role"] == "user" else "RAG Assistant"
-
+    # 6. Check Active Vectorstore State to decide page layout
+    if st.session_state.vectorstore is not None and st.session_state.doc_info is not None:
+        # Render premium HTML Doc Info Card
+        info = st.session_state.doc_info
         st.markdown(f"""
-        <div class="chat-bubble {role_class}">
-            <div class="bubble-meta {meta_class}">{meta_label}</div>
-            <div class="bubble-body">{msg["content"]}</div>
+        <div class="doc-info-card">
+            <div class="doc-info-header">
+                <span>📄</span> Ingested Document Insight Card
+            </div>
+            <div class="doc-info-grid">
+                <div class="doc-info-item">
+                    <div class="doc-info-label">File Name</div>
+                    <div class="doc-info-value">{info['file_name']}</div>
+                </div>
+                <div class="doc-info-item">
+                    <div class="doc-info-label">File Size</div>
+                    <div class="doc-info-value">{info['file_size']}</div>
+                </div>
+                <div class="doc-info-item">
+                    <div class="doc-info-label">Page Count</div>
+                    <div class="doc-info-value">{info['pages']} pages</div>
+                </div>
+                <div class="doc-info-item">
+                    <div class="doc-info-label">Vector Chunks</div>
+                    <div class="doc-info-value">{info['chunks']} semantic chunks</div>
+                </div>
+                <div class="doc-info-item">
+                    <div class="doc-info-label">Ingestion Latency</div>
+                    <div class="doc-info-value">{info['duration']}</div>
+                </div>
+            </div>
         </div>
         """, unsafe_allow_html=True)
 
-        # Draw associated search citations if assistant message contains source history
-        if msg["role"] == "assistant" and "sources" in msg and msg["sources"]:
-            with st.expander("🔍 Citations & Extracted Document Chunks"):
-                for idx, src in enumerate(msg["sources"]):
+        # 7. Setup Dynamic Retriever & Generative LLM
+        vectorstore = st.session_state.vectorstore
+        
+        if search_strategy == "mmr":
+            retriever = vectorstore.as_retriever(
+                search_type="mmr",
+                search_kwargs={
+                    "k": k_chunks,
+                    "fetch_k": fetch_k,
+                    "lambda_mult": lambda_mult
+                }
+            )
+        else:
+            retriever = vectorstore.as_retriever(
+                search_type="similarity",
+                search_kwargs={
+                    "k": k_chunks
+                }
+            )
+
+        # Generative LLM instantiation using active key
+        llm = ChatMistralAI(
+            mistral_api_key=active_key,
+            model=llm_model,
+            temperature=temperature
+        )
+
+        # Prompt Template definition
+        prompt_template = ChatPromptTemplate.from_messages(
+            [
+                (
+                    "system",
+                    """You are a helpful AI assistant.
+
+                    Use ONLY the provided context to answer the question.
+
+                    If the answer is not present in the context,
+                    say: "I could not find the answer in the document."
+                    
+                    Keep your answers highly detailed and professional, directly referencing details from the context.
+                    """
+                ),
+                (
+                    "human",
+                    """Context:
+                    {context}
+
+                    Question:
+                    {question}
+                    """
+                )
+            ]
+        )
+
+        # 8. Render Message History
+        for msg in st.session_state.messages:
+            role_class = "user-bubble" if msg["role"] == "user" else "assistant-bubble"
+            meta_class = "user-meta" if msg["role"] == "user" else "assistant-meta"
+            meta_label = "User Query" if msg["role"] == "user" else "RAG Assistant"
+
+            st.markdown(f"""
+            <div class="chat-bubble {role_class}">
+                <div class="bubble-meta {meta_class}">{meta_label}</div>
+                <div class="bubble-body">{msg["content"]}</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+            # Draw citations
+            if msg["role"] == "assistant" and "sources" in msg and msg["sources"]:
+                with st.expander("🔍 Citations & Extracted Document Chunks"):
+                    for idx, src in enumerate(msg["sources"]):
+                        st.markdown(f"""
+                        <div class="citation-card">
+                            <span class="citation-title">Source Fragment #{idx+1}</span>
+                            <div class="citation-path">📄 {src.get('source', 'ChromaDB Chunk')}</div>
+                            <div class="citation-content">{src.get('page_content', '')}</div>
+                        </div>
+                        """, unsafe_allow_html=True)
+
+        # 9. Query Input
+        user_query = st.chat_input("Ask a question relevant to the uploaded document...")
+
+        if user_query:
+            # Render User message instantly
+            st.markdown(f"""
+            <div class="chat-bubble user-bubble">
+                <div class="bubble-meta user-meta">User Query</div>
+                <div class="bubble-body">{user_query}</div>
+            </div>
+            """, unsafe_allow_html=True)
+            st.session_state.messages.append({"role": "user", "content": user_query})
+
+            # Run Pipelines
+            with st.spinner("🧠 Querying ChromaDB and generating answer via Mistral AI..."):
+                t_start = time.time()
+                
+                # Retrieval
+                retrieved_docs = retriever.invoke(user_query)
+                latency_retrieval = time.time() - t_start
+                
+                # Context mapping
+                context_string = "\n\n".join([doc.page_content for doc in retrieved_docs])
+                
+                # Generation
+                formatted_prompt = prompt_template.format_messages(
+                    context=context_string,
+                    question=user_query
+                )
+                
+                response = llm.invoke(formatted_prompt)
+                answer_content = response.content
+
+            # Render Assistant response
+            st.markdown(f"""
+            <div class="chat-bubble assistant-bubble">
+                <div class="bubble-meta assistant-meta">RAG Assistant</div>
+                <div class="bubble-body">{answer_content}</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+            # Map sources
+            sources_list = [
+                {"page_content": doc.page_content, "source": f"Page {doc.metadata.get('page', 0) + 1} of {st.session_state.processed_file_name}"}
+                for doc in retrieved_docs
+            ]
+
+            # Render Citations expander
+            with st.expander("🔍 Citations & Extracted Document Chunks", expanded=False):
+                st.caption(f"Retrieved {len(retrieved_docs)} fragments in {latency_retrieval:.3f}s via {search_strategy.upper()} strategy.")
+                for idx, src in enumerate(sources_list):
                     st.markdown(f"""
                     <div class="citation-card">
                         <span class="citation-title">Source Fragment #{idx+1}</span>
-                        <div class="citation-path">📄 {src.get('source', 'ChromaDB Chunk')}</div>
-                        <div class="citation-content">{src.get('page_content', '')}</div>
+                        <div class="citation-path">📄 {src['source']}</div>
+                        <div class="citation-content">{src['page_content']}</div>
                     </div>
                     """, unsafe_allow_html=True)
 
-    # 7. Chat Query Input
-    user_query = st.chat_input("Enter your query about the ingested document...")
+            # Add to memory
+            st.session_state.messages.append({
+                "role": "assistant",
+                "content": answer_content,
+                "sources": sources_list
+            })
 
-    if user_query:
-        # User Message Visual Render & State Ingestion
-        st.markdown(f"""
-        <div class="chat-bubble user-bubble">
-            <div class="bubble-meta user-meta">User Query</div>
-            <div class="bubble-body">{user_query}</div>
+    else:
+        # 10. Empty State Screen (Upload greeting)
+        st.markdown("""
+        <div class="empty-state-container">
+            <div class="empty-state-icon">🧠✨</div>
+            <h3 style="margin-bottom: 0.6rem; color: #818cf8; font-size: 1.6rem;">Upload a PDF to Start Chatting</h3>
+            <p style="color: #94a3b8; font-size: 1rem; max-width: 580px; margin: 0 auto; line-height: 1.6; font-weight: 300;">
+                Welcome to the RAG Insight Engine. To begin, drop a PDF research paper, article, or document into the uploader above. We will dynamically extract its pages, index them into an ephemeral vector store using your Mistral AI Key, and ground all answers directly in the text with precise page citations.
+            </p>
         </div>
         """, unsafe_allow_html=True)
-        st.session_state.messages.append({"role": "user", "content": user_query})
-
-        # Retrieval & Generation Pipelines
-        with st.spinner("🧠 Querying ChromaDB and generating answer via Mistral AI..."):
-            t_start = time.time()
-            
-            # Semantic search
-            retrieved_docs = retriever.invoke(user_query)
-            latency_retrieval = time.time() - t_start
-            
-            # Combine documents content
-            context_string = "\n\n".join([doc.page_content for doc in retrieved_docs])
-            
-            # LLM Prompt Synthesis
-            formatted_prompt = prompt_template.format_messages(
-                context=context_string,
-                question=user_query
-            )
-            
-            # Generative LLM invocation
-            response = llm.invoke(formatted_prompt)
-            answer_content = response.content
-
-        # Assistant Response Visual Render
-        st.markdown(f"""
-        <div class="chat-bubble assistant-bubble">
-            <div class="bubble-meta assistant-meta">RAG Assistant</div>
-            <div class="bubble-body">{answer_content}</div>
-        </div>
-        """, unsafe_allow_html=True)
-
-        # Parse source items
-        sources_list = [
-            {"page_content": doc.page_content, "source": doc.metadata.get("source", "Unknown Source")}
-            for doc in retrieved_docs
-        ]
-
-        # Draw brand new expandable citations drawer
-        with st.expander("🔍 Citations & Extracted Document Chunks", expanded=False):
-            st.caption(f"Retrieved {len(retrieved_docs)} fragments in {latency_retrieval:.3f}s via {search_strategy.upper()} strategy.")
-            for idx, src in enumerate(sources_list):
-                st.markdown(f"""
-                <div class="citation-card">
-                    <span class="citation-title">Source Fragment #{idx+1}</span>
-                    <div class="citation-path">📄 {src['source']}</div>
-                    <div class="citation-content">{src['page_content']}</div>
-                </div>
-                """, unsafe_allow_html=True)
-
-        # Append response and references to conversational memory state
-        st.session_state.messages.append({
-            "role": "assistant",
-            "content": answer_content,
-            "sources": sources_list
-        })
