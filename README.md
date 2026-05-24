@@ -48,6 +48,7 @@ Generative_AI/
 │   ├── README.md                 # Detailed RAG project documentation & roadmap
 │   ├── Database.py               # Main Vector Database build & ingestion pipeline
 │   ├── main.py                   # Clean LLM chat & prompt testing module
+│   ├── app.py                    # Premium Streamlit Conversational RAG Web UI
 │   └── requirements.txt          # Ingestion, embedding, LLM, and vector database packages
 │
 ├── Video_1/                      # 🎥 Foundations & Streamlit Chatbot
@@ -105,9 +106,10 @@ A specialized **Retrieval-Augmented Generation (RAG)** pipeline designed to load
   * Added `ArxivRetriever` (`Arixv.py`) for live API queries. Bypassed rate limits and redirects via custom HTTPS configurations.
   * Added Maximal Marginal Relevance (MMR) retrieval (`Mmr.py`) to reduce duplication by weighting chunk diversity.
   * Added Multi-Query Expansion (`Multiquery.py`) powered by `ChatMistralAI` to automatically generate multiple query perspectives and maximize database match rates.
-* **Advanced Orchestration & Prompting**:
+* **Advanced Orchestration, Prompting & Premium UI**:
   * Added `Database.py` as the official, standalone vector database build pipeline which handles parsing `Big.pdf`, splitting chunks semantically, and indexing vectors inside local Chroma storage.
   * Streamlined `main.py` into a clean base LLM testing suite invoking ChatMistralAI (`open-mistral-7b`) with dynamic prompts to verify model answers.
+  * Added `app.py` as a premium dark-mode, glassmorphism Conversational RAG Web UI. Features include persistent multi-turn chat sessions, real-time source citation inspectors, and dynamic parameter tuning sliders (MMR/Similarity thresholds, k-chunk counts, temperature) in the sidebar.
 
 ---
 
@@ -175,4 +177,8 @@ MISTRAL_API_KEY=your_mistral_api_key_here
 8. Run chatbot prompt testing:
    ```bash
    python RAG_Project/main.py
+   ```
+9. Start premium Conversational Web UI:
+   ```bash
+   streamlit run RAG_Project/app.py
    ```

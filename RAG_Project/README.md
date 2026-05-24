@@ -36,6 +36,7 @@ RAG_Project/
 ├── .env                      # [Local Only] API keys and config (Mistral, HuggingFace, Groq)
 ├── Database.py               # 🚀 Main Vector Database build & ingestion pipeline
 ├── main.py                   # 💬 Clean LLM chat & prompt testing module
+├── app.py                    # 💻 Premium Streamlit Conversational RAG Web UI
 └── requirements.txt          # Ingestion, embedding, LLM, and vector store dependencies
 ```
 
@@ -72,6 +73,13 @@ A dedicated end-to-end database constructor script:
 A streamlined interface to quickly evaluate base model answers:
 * **Mistral Integration**: Couples `python-dotenv` environment loaders with LangChain's `ChatMistralAI` to run base model inferences (`open-mistral-7b`).
 * **Prompt Structuring**: Combines `ChatPromptTemplate` instructions dynamically to test basic prompt responsiveness.
+
+### 6. Premium Conversational RAG Web Interface (`app.py`) 💻
+A highly sophisticated, state-of-the-art Streamlit Web UI designed around modern UI/UX principles:
+* **Rich Glassmorphism Style**: Translucent containers with subtle border shadows, deep dark radial gradients, and custom modern typography (Outfit/Space Grotesk).
+* **Multi-Turn Persistent Chat**: Keeps an interactive, continuous conversation flow in session states, rendering user and assistant bubbles with specific avatar alignments.
+* **Citations & Document Viewer**: Employs expandable cards to reveal retrieved document snippets and source locations alongside generative responses in real-time.
+* **Sidebar Tuning Console**: Provides sliders and dropdowns to adjust LLM models, creativity temperature, search modes (MMR vs. Similarity), k-chunk counts, and diversity variables (`fetch_k`, `lambda`) on the fly.
 
 ### 6. Advanced Retrieval Strategies (`Retrievers/`) 🔍
 An index query-expansion and relevance optimization layer to maximize retrieval coverage:
@@ -187,6 +195,14 @@ pip install -r RAG_Project/requirements.txt
   ```
   *This invokes the open-mistral-7b model using standard prompts to verify base connectivity.*
 
+### 9. Launch Premium Conversational Web UI 💻
+
+* **Start the Streamlit RAG Dashboard**:
+  ```bash
+  streamlit run RAG_Project/app.py
+  ```
+  *This opens the state-of-the-art RAG web interface in your browser (defaults to http://localhost:8501).*
+
 ---
 
 ## 📈 Roadmap & Next Steps
@@ -198,4 +214,4 @@ pip install -r RAG_Project/requirements.txt
 - [x] **Vector Ingestion**: Embed document chunks using `MistralAIEmbeddings` and save them to local `ChromaDB`.
 - [x] **Contextual Retrieval**: Implement semantic search query parsing to fetch only relevant chunks.
 - [ ] **Hybrid Search / Re-ranking**: Optimize retrieval scores using advanced ranking strategies.
-- [ ] **Conversational UI**: Add a Streamlit visual dashboard for multi-turn questions & answers.
+- [x] **Conversational UI**: Add a Streamlit visual dashboard for multi-turn questions & answers.
