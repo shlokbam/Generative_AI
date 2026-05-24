@@ -48,7 +48,8 @@ Generative_AI/
 │   ├── README.md                 # Detailed RAG project documentation & roadmap
 │   ├── Database.py               # Main Vector Database build & ingestion pipeline
 │   ├── main.py                   # Clean LLM chat & prompt testing module
-│   ├── app.py                    # Premium Streamlit Conversational RAG Web UI
+│   ├── streamlit_app.py          # Dedicated Streamlit Web UI mapping precisely to main.py
+│   ├── app.py                    # Custom Conversational RAG Web UI with advanced sliders
 │   └── requirements.txt          # Ingestion, embedding, LLM, and vector database packages
 │
 ├── Video_1/                      # 🎥 Foundations & Streamlit Chatbot
@@ -109,6 +110,7 @@ A specialized **Retrieval-Augmented Generation (RAG)** pipeline designed to load
 * **Advanced Orchestration, Prompting & Premium UI**:
   * Added `Database.py` as the official, standalone vector database build pipeline which handles parsing `Big.pdf`, splitting chunks semantically, and indexing vectors inside local Chroma storage.
   * Streamlined `main.py` into a clean base LLM testing suite invoking ChatMistralAI (`open-mistral-7b`) with dynamic prompts to verify model answers.
+  * Added `streamlit_app.py` as a dedicated Streamlit UI designed to directly mirror and execute `main.py`'s query flow with gorgeous dark themes, structured citations, and parameter sidebar sliders.
   * Added `app.py` as a premium dark-mode, glassmorphism Conversational RAG Web UI. Features include persistent multi-turn chat sessions, real-time source citation inspectors, and dynamic parameter tuning sliders (MMR/Similarity thresholds, k-chunk counts, temperature) in the sidebar.
 
 ---
@@ -178,7 +180,12 @@ MISTRAL_API_KEY=your_mistral_api_key_here
    ```bash
    python RAG_Project/main.py
    ```
-9. Start premium Conversational Web UI:
-   ```bash
-   streamlit run RAG_Project/app.py
-   ```
+9. Start premium Conversational Web UIs:
+   * **Dedicated Streamlit UI (matching `main.py` flow)**:
+     ```bash
+     streamlit run RAG_Project/streamlit_app.py
+     ```
+   * **Advanced Visual Dashboard**:
+     ```bash
+     streamlit run RAG_Project/app.py
+     ```

@@ -36,7 +36,8 @@ RAG_Project/
 ├── .env                      # [Local Only] API keys and config (Mistral, HuggingFace, Groq)
 ├── Database.py               # 🚀 Main Vector Database build & ingestion pipeline
 ├── main.py                   # 💬 Clean LLM chat & prompt testing module
-├── app.py                    # 💻 Premium Streamlit Conversational RAG Web UI
+├── streamlit_app.py          # 💻 Premium Streamlit Web UI mapping precisely to main.py
+├── app.py                    # 💻 Custom Conversational RAG Web UI with advanced sliders
 └── requirements.txt          # Ingestion, embedding, LLM, and vector store dependencies
 ```
 
@@ -74,12 +75,13 @@ A streamlined interface to quickly evaluate base model answers:
 * **Mistral Integration**: Couples `python-dotenv` environment loaders with LangChain's `ChatMistralAI` to run base model inferences (`open-mistral-7b`).
 * **Prompt Structuring**: Combines `ChatPromptTemplate` instructions dynamically to test basic prompt responsiveness.
 
-### 6. Premium Conversational RAG Web Interface (`app.py`) 💻
-A highly sophisticated, state-of-the-art Streamlit Web UI designed around modern UI/UX principles:
+### 6. Premium Conversational RAG Web Interfaces (`streamlit_app.py` & `app.py`) 💻
+Highly sophisticated, state-of-the-art Streamlit Web UIs designed around modern UI/UX principles:
 * **Rich Glassmorphism Style**: Translucent containers with subtle border shadows, deep dark radial gradients, and custom modern typography (Outfit/Space Grotesk).
 * **Multi-Turn Persistent Chat**: Keeps an interactive, continuous conversation flow in session states, rendering user and assistant bubbles with specific avatar alignments.
 * **Citations & Document Viewer**: Employs expandable cards to reveal retrieved document snippets and source locations alongside generative responses in real-time.
 * **Sidebar Tuning Console**: Provides sliders and dropdowns to adjust LLM models, creativity temperature, search modes (MMR vs. Similarity), k-chunk counts, and diversity variables (`fetch_k`, `lambda`) on the fly.
+* **Specialized `streamlit_app.py` Mapping**: Created as a direct web interface for `main.py` but enhanced with real-time sidebar parameter tuning, radial dark theme, and structured citation lists.
 
 ### 6. Advanced Retrieval Strategies (`Retrievers/`) 🔍
 An index query-expansion and relevance optimization layer to maximize retrieval coverage:
@@ -197,11 +199,17 @@ pip install -r RAG_Project/requirements.txt
 
 ### 9. Launch Premium Conversational Web UI 💻
 
-* **Start the Streamlit RAG Dashboard**:
+* **Start the Streamlit RAG UI for main.py (Dedicated)**:
+  ```bash
+  streamlit run RAG_Project/streamlit_app.py
+  ```
+  *This launches the dedicated Streamlit UI mapping directly to main.py's logic, equipped with interactive sidebar controls, radial dark theme, and visual citations.*
+
+* **Start the Streamlit RAG Dashboard (Advanced)**:
   ```bash
   streamlit run RAG_Project/app.py
   ```
-  *This opens the state-of-the-art RAG web interface in your browser (defaults to http://localhost:8501).*
+  *This opens the advanced visual RAG dashboard featuring full conversation tracking, dynamic sliders, and citation card arrays.*
 
 ---
 
