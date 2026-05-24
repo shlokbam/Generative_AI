@@ -10,7 +10,7 @@ This repository serves as a centralized hub for all my completed implementations
 ## 📅 Modules & Implementations Tracker
 
 - [x] **Video 1: Foundations of LangChain, LLM Integrations, Local Embeddings & Streamlit UIs**  
-- [x] **Video 2: RAG Project (Phase 1) - Multi-Format Ingestion, Document Loaders & Mistral AI Orchestration**  
+- [x] **Video 2: RAG Project - Multi-Format Ingestion, Document Loaders & Mistral AI Orchestration**  
 - [ ] **Video 3: (Upcoming)**
 - [ ] **Video 4: (Upcoming)**
 - [ ] **Video 5: (Upcoming)**
@@ -88,7 +88,7 @@ The following functional units and configurations have been successfully impleme
 
 ---
 
-## 🛠️ RAG Project (Phase 1): Ingestion, Splitting, Indexing & Orchestration
+## 🛠️ RAG Project: Ingestion, Splitting, Indexing & Orchestration
 
 A specialized **Retrieval-Augmented Generation (RAG)** pipeline designed to load, partition, embed, index, and synthesize responses using:
 * **Multi-Format Ingestion**: 
@@ -145,7 +145,7 @@ MISTRAL_API_KEY=your_mistral_api_key_here
    python -m streamlit run Video_1/chat_models/chatbot_ui.py
    ```
 
-#### 🧠 RAG Project (Phase 1)
+#### 🧠 RAG Project
 1. Install dependencies:
    ```bash
    pip install -r RAG_Project/requirements.txt
