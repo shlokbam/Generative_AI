@@ -15,7 +15,8 @@ RAG_Project/
 │   ├── GRU.pdf               # Sample research paper (Gated Recurrent Units)
 │   ├── notes.txt             # Plaintext sample notes (Deep Learning foundations)
 │   ├── pdf.py                # Isolated PyPDFLoader test suite
-│   └── test.py               # Isolated TextLoader test suite
+│   ├── test.py               # Isolated TextLoader test suite
+│   └── page.py               # WebBaseLoader URL content loader
 │
 ├── .env                      # [Local Only] API keys and config (Mistral, HuggingFace, Groq)
 ├── main.py                   # Main RAG orchestration & summarization pipeline
@@ -27,9 +28,10 @@ RAG_Project/
 ## ⚡ Features & Architecture
 
 ### 1. Multi-Format Document Ingestion 📂
-The ingestion pipeline is designed to process both structured and unstructured inputs:
+The ingestion pipeline is designed to process both structured, unstructured, and web-based inputs:
 * **PyPDF Extraction (`pdf.py`)**: Demonstrates how to load complex PDF documents (`GRU.pdf`) into discrete, metadata-rich page objects using `PyPDFLoader`. It programmatically reads full documents and showcases how to extract specific index ranges (e.g., retrieving the concluding sections dynamically).
 * **Plaintext Ingestion (`test.py`)**: Utilizes `TextLoader` to seamlessly convert standard `.txt` text corpora (`notes.txt`) into LangChain `Document` schemas ready for chunking and tokenization.
+* **HTML/Web Scraping Ingestion (`page.py`)**: Leverages LangChain's `WebBaseLoader` (utilizing `BeautifulSoup4`) to load, fetch, and extract raw textual content from live web URLs (e.g., product detail pages) into document structures, preparing the ground for hybrid data-sources.
 
 ### 2. Intelligent Prompts & Orchestration (`main.py`) 🔗
 The main entry point ties document ingestion and model invocation together:
@@ -75,6 +77,12 @@ pip install -r RAG_Project/requirements.txt
   ```
   *This loads the plaintext Deep Learning notes and displays the parsed content in the terminal.*
 
+* **Test Web/Page Loader**:
+  ```bash
+  python RAG_Project/document_loaders/page.py
+  ```
+  *This targets a live URL, scrapes the webpage utilizing WebBaseLoader, and prints the raw page content.*
+
 ### 4. Execute Main RAG Pipeline
 Run the main entrypoint to load the PDF, feed the concluding section into the Mistral model, and generate a dynamic summary:
 ```bash
@@ -85,7 +93,7 @@ python RAG_Project/main.py
 
 ## 📈 Roadmap & Next Steps
 
-- [x] Implement multi-format document loaders (`PyPDFLoader`, `TextLoader`).
+- [x] Implement multi-format document loaders (`PyPDFLoader`, `TextLoader`, `WebBaseLoader`).
 - [x] Configure LLM models (Mistral AI integration).
 - [x] Design prompt structures for parsing extracted document pages.
 - [ ] **Chunking & Splitting**: Add `RecursiveCharacterTextSplitter` to optimize token usage.

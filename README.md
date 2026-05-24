@@ -27,7 +27,8 @@ Generative_AI/
 │   │   ├── GRU.pdf               # Research paper (Gated Recurrent Units)
 │   │   ├── notes.txt             # Plaintext Deep Learning notes
 │   │   ├── pdf.py                # PyPDFLoader integration
-│   │   └── test.py               # TextLoader integration
+│   │   ├── test.py               # TextLoader integration
+│   │   └── page.py               # WebBaseLoader URL content loader
 │   │
 │   ├── README.md                 # Detailed RAG project documentation & roadmap
 │   ├── main.py                   # Main RAG orchestration & summarization pipeline
@@ -76,6 +77,7 @@ A specialized **Retrieval-Augmented Generation (RAG)** pipeline designed to load
 * **Multi-Format Ingestion**: 
   * Integrated `PyPDFLoader` to load, parse, and partition mathematical research documents (e.g., `GRU.pdf`) into discrete, metadata-rich page collections.
   * Integrated `TextLoader` to ingest unstructured plaintext assets (e.g., `notes.txt`) into memory-mappable document streams.
+  * Integrated `WebBaseLoader` to pull and extract raw textual document streams directly from live website URLs (e.g., MacBook Pro specs).
 * **Advanced Orchestration (`main.py`)**:
   * Coupled `python-dotenv` environment loaders with LangChain's `ChatMistralAI` to run highly optimized LLM invocations using `open-mistral-7b`.
   * Built custom prompt engineering flows utilizing `ChatPromptTemplate` to summarize specific document indexes dynamically.
@@ -123,7 +125,11 @@ MISTRAL_API_KEY=your_mistral_api_key_here
    ```bash
    python RAG_Project/document_loaders/pdf.py
    ```
-3. Run main summarization pipeline:
+3. Run document loaders test (Web scraping):
+   ```bash
+   python RAG_Project/document_loaders/page.py
+   ```
+4. Run main summarization pipeline:
    ```bash
    python RAG_Project/main.py
    ```
