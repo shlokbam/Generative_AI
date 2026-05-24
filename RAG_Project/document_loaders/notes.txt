@@ -1,0 +1,56 @@
+Deep Learning Notes
+
+1. Introduction to Deep Learning
+Deep Learning is a subset of Machine Learning based on Artificial Neural Networks.
+It enables computers to learn patterns from large amounts of data automatically.
+
+Key Features:
+- Learns hierarchical representations
+- Works well with images, audio, text, and videos
+- Requires large datasets and computational power
+
+2. Artificial Neural Network (ANN)
+An ANN is inspired by the human brain and consists of:
+- Input Layer
+- Hidden Layers
+- Output Layer
+
+Each neuron receives inputs, applies weights, adds bias, and passes through an activation function.
+
+3. Activation Functions
+Common activation functions:
+- Sigmoid
+- ReLU (Rectified Linear Unit)
+- Tanh
+- Softmax
+
+4. Types of Deep Learning Networks
+- CNN (Convolutional Neural Network)
+- RNN (Recurrent Neural Network)
+- LSTM (Long Short-Term Memory)
+- GAN (Generative Adversarial Network)
+
+5. Applications of Deep Learning
+- Image Recognition
+- Speech Recognition
+- Natural Language Processing
+- Self-driving Cars
+- Recommendation Systems
+
+6. Advantages
+- High accuracy
+- Automatic feature extraction
+- Handles unstructured data effectively
+
+7. Disadvantages
+- Requires large datasets
+- High computational cost
+- Difficult to interpret
+
+8. Popular Frameworks
+- TensorFlow
+- PyTorch
+- Keras
+
+9. Conclusion
+Deep Learning has transformed Artificial Intelligence by enabling systems to perform complex tasks with high efficiency and accuracy.

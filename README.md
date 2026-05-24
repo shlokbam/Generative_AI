@@ -10,7 +10,7 @@ This repository serves as a centralized hub for all my completed implementations
 ## 📅 Modules & Implementations Tracker
 
 - [x] **Video 1: Foundations of LangChain, LLM Integrations, Local Embeddings & Streamlit UIs**  
-- [ ] **Video 2: (Upcoming)**
+- [x] **Video 2: RAG Project (Phase 1) - Multi-Format Ingestion, Document Loaders & Mistral AI Orchestration**  
 - [ ] **Video 3: (Upcoming)**
 - [ ] **Video 4: (Upcoming)**
 - [ ] **Video 5: (Upcoming)**
@@ -22,22 +22,33 @@ This repository serves as a centralized hub for all my completed implementations
 ```text
 Generative_AI/
 │
-├── Video_1/
+├── RAG_Project/                  # 🧠 Retrieval-Augmented Generation Hub
+│   ├── document_loaders/
+│   │   ├── GRU.pdf               # Research paper (Gated Recurrent Units)
+│   │   ├── notes.txt             # Plaintext Deep Learning notes
+│   │   ├── pdf.py                # PyPDFLoader integration
+│   │   └── test.py               # TextLoader integration
+│   │
+│   ├── README.md                 # Detailed RAG project documentation & roadmap
+│   ├── main.py                   # Main RAG orchestration & summarization pipeline
+│   └── requirements.txt          # Ingestion, embedding, LLM, and vector database packages
+│
+├── Video_1/                      # 🎥 Foundations & Streamlit Chatbot
 │   ├── chat_models/
-│   │   ├── chat.py                   # Initial Groq LLM integration
-│   │   ├── Hugging_face.py           # LangChain + Hugging Face Endpoint
+│   │   ├── chat.py                   # Groq LLM integration
+│   │   ├── Hugging_face.py           # HF API Endpoint integration
 │   │   ├── chatbot.py                # CLI Interactive chatbot with memory
-│   │   └── chatbot_ui.py             # Premium Streamlit Web Chatbot UI
+│   │   └── chatbot_ui.py             # Streamlit chatbot web dashboard
 │   │
 │   ├── Embedding_models/
-│   │   └── huggingface_embeddings.py # Local text embeddings with Sentence-Transformers
+│   │   └── huggingface_embeddings.py # Local text embeddings (Sentence-Transformers)
 │   │
 │   ├── intro.txt                     # Detailed summary of Video 1 tasks
 │   └── requirements.txt              # Video 1 package dependencies
 │
 ├── .env.example                      # Template for secure environment keys
 ├── .gitignore                        # Standard Python gitignore rules
-└── README.md                         # Main repository index
+└── README.md                         # Main repository index (this file)
 ```
 
 ---
@@ -59,6 +70,18 @@ The following functional units and configurations have been successfully impleme
 
 ---
 
+## 🛠️ RAG Project (Phase 1): Ingestion & Model Orchestration
+
+A specialized **Retrieval-Augmented Generation (RAG)** pipeline designed to load, parse, template, and synthesize responses from local files using:
+* **Multi-Format Ingestion**: 
+  * Integrated `PyPDFLoader` to load, parse, and partition mathematical research documents (e.g., `GRU.pdf`) into discrete, metadata-rich page collections.
+  * Integrated `TextLoader` to ingest unstructured plaintext assets (e.g., `notes.txt`) into memory-mappable document streams.
+* **Advanced Orchestration (`main.py`)**:
+  * Coupled `python-dotenv` environment loaders with LangChain's `ChatMistralAI` to run highly optimized LLM invocations using `open-mistral-7b`.
+  * Built custom prompt engineering flows utilizing `ChatPromptTemplate` to summarize specific document indexes dynamically.
+
+---
+
 ## 🚀 Setup and Installation
 
 ### 1. Clone & Navigate
@@ -68,26 +91,39 @@ cd Generative_AI
 ```
 
 ### 2. Setup your Environment Variables
-Duplicate the `.env.example` file and rename it to `.env`:
+Create a `.env` file under both the root directory and/or the `RAG_Project` folder:
 ```bash
 cp .env.example .env
 ```
-Open your `.env` file and insert your actual API keys:
+Open the `.env` file and insert your API keys:
 ```env
 GROQ_API_KEY=gsk_your_actual_key_here
+HUGGINGFACEHUB_API_TOKEN=hf_your_actual_key_here
+MISTRAL_API_KEY=your_mistral_api_key_here
 ```
 
-### 3. Install Dependencies
-Ensure you are using your virtual environment and install the required modules:
-```bash
-python -m venv .venv
-source .venv/bin/activate  # On macOS/Linux
-pip install -r requirements.txt
-```
+### 3. Install Dependencies & Run Applications
 
-### 4. Run the Chatbot Web UI
-Run the Streamlit application:
-```bash
-python -m streamlit run Video_1/chat_models/chatbot_ui.py
-```
-This will automatically open the application at `http://localhost:8501`.
+#### 📺 Video 1: Streamlit Chatbot
+1. Install dependencies:
+   ```bash
+   pip install -r Video_1/requirements.txt
+   ```
+2. Start the interactive UI:
+   ```bash
+   python -m streamlit run Video_1/chat_models/chatbot_ui.py
+   ```
+
+#### 🧠 RAG Project (Phase 1)
+1. Install dependencies:
+   ```bash
+   pip install -r RAG_Project/requirements.txt
+   ```
+2. Run document loaders test (PDF):
+   ```bash
+   python RAG_Project/document_loaders/pdf.py
+   ```
+3. Run main summarization pipeline:
+   ```bash
+   python RAG_Project/main.py
+   ```
