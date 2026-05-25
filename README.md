@@ -11,7 +11,7 @@ This repository serves as a centralized hub for all my completed implementations
 
 - [x] **Video 1: Foundations of LangChain, LLM Integrations, Local Embeddings & Streamlit UIs**  
 - [x] **Video 2: RAG Project - Multi-Format Ingestion, Document Loaders & Mistral AI Orchestration**  
-- [ ] **Video 3: (Upcoming)**
+- [x] **Video 3: Runnables, Tools & Agents — LangChain Expression Language (LCEL) Internals**
 - [ ] **Video 4: (Upcoming)**
 - [ ] **Video 5: (Upcoming)**
 
@@ -64,6 +64,14 @@ Generative_AI/
 │   ├── intro.txt                     # Detailed summary of Video 1 tasks
 │   └── requirements.txt              # Video 1 package dependencies
 │
+├── Agents/                           # 🤖 LangChain Runnables, Tools & Agents
+│   ├── Runnables/
+│   │   ├── Sequence_runnables.py     # Basic LCEL chain (prompt | llm | parser)
+│   │   ├── parallel_runnables.py     # RunnableParallel — concurrent multi-branch chains
+│   │   └── passthrough_runnables.py  # RunnablePassthrough — piping raw output downstream
+│   ├── .env                          # API keys for Agents module
+│   └── requirements.txt              # Agents module dependencies
+│
 ├── .env.example                      # Template for secure environment keys
 ├── .gitignore                        # Standard Python gitignore rules
 └── README.md                         # Main repository index (this file)
@@ -110,6 +118,24 @@ A specialized **Retrieval-Augmented Generation (RAG)** pipeline designed to load
   * Added `Database.py` as the official, standalone vector database build pipeline which handles parsing `Big.pdf`, splitting chunks semantically, and indexing vectors inside local Chroma storage.
   * Streamlined `main.py` into a clean base LLM testing suite invoking ChatMistralAI (`open-mistral-7b`) with dynamic prompts to verify model answers.
   * Added `streamlit_app.py` as a premium, dedicated Streamlit UI designed to directly mirror and execute `main.py`'s query flow with gorgeous glassmorphic dark themes, persistent chat memory, structured citations card blocks, and real-time parameter sidebar sliders (MMR vs Similarity search, $k$, $fetch\_k$, temperature).
+
+---
+
+## 🛠️ Video 3: Runnables, Tools & Agents
+
+Deep-dive into **LangChain Expression Language (LCEL)** internals, covering composable runnable primitives for building complex, production-grade chains:
+
+* **Sequence Runnables** (`Sequence_runnables.py`):
+  * Built the foundational LCEL pipe chain: `prompt | llm | parser`.
+  * Demonstrated how `ChatPromptTemplate`, `ChatMistralAI`, and `StrOutputParser` compose as a single invokable unit.
+* **Parallel Runnables** (`parallel_runnables.py`):
+  * Used `RunnableParallel` to run multiple independent LLM chains **concurrently** in a single `invoke()` call.
+  * All branches share the same input dict — each branch extracts its own key (`short`, `detailed`) and has its own prompt + parser pipeline.
+  * Returns a dict of results keyed by branch name.
+* **Passthrough Runnables** (`passthrough_runnables.py`):
+  * Chained two sequential stages using `RunnablePassthrough` to pass the raw output of `seq1` (generated code) into `seq2` as-is.
+  * `seq2` is a `RunnableParallel` with one passthrough branch (raw code) and one explanation branch (`explain_prompt | model | parser`).
+  * Final response dict contains both `code` and `explanation` keys.
 
 ---
 
@@ -181,4 +207,22 @@ MISTRAL_API_KEY=your_mistral_api_key_here
 9. Start premium Conversational Web UI:
    ```bash
    streamlit run RAG_Project/streamlit_app.py
+   ```
+
+#### 🤖 Video 3: Agents & Runnables
+1. Install dependencies:
+   ```bash
+   pip install -r Agents/requirements.txt
+   ```
+2. Run basic sequence chain:
+   ```bash
+   python Agents/Runnables/Sequence_runnables.py
+   ```
+3. Run parallel multi-branch chain:
+   ```bash
+   python Agents/Runnables/parallel_runnables.py
+   ```
+4. Run passthrough code-generation + explanation chain:
+   ```bash
+   python Agents/Runnables/passthrough_runnables.py
    ```
