@@ -69,6 +69,12 @@ Generative_AI/
 │   │   ├── Sequence_runnables.py     # Basic LCEL chain (prompt | llm | parser)
 │   │   ├── parallel_runnables.py     # RunnableParallel — concurrent multi-branch chains
 │   │   └── passthrough_runnables.py  # RunnablePassthrough — piping raw output downstream
+│   ├── Tools/
+│   │   ├── custom_tool.py            # @tool decorator — creating custom LLM tools
+│   │   ├── call_bind_execute_tool.py # Tool binding, tool calls & manual execution loop
+│   │   ├── news_summarizer.py        # TavilySearchResults + LCEL summarization chain
+│   │   ├── Agent.py                  # LangGraph ReAct agent (weather + news tools)
+│   │   └── streamlit_app.py          # Premium Streamlit UI with agent trace transparency
 │   ├── .env                          # API keys for Agents module
 │   └── requirements.txt              # Agents module dependencies
 │
@@ -123,19 +129,32 @@ A specialized **Retrieval-Augmented Generation (RAG)** pipeline designed to load
 
 ## 🛠️ Video 3: Runnables, Tools & Agents
 
-Deep-dive into **LangChain Expression Language (LCEL)** internals, covering composable runnable primitives for building complex, production-grade chains:
+Deep-dive into **LangChain Expression Language (LCEL)** and the full **Tools & Agents** stack:
 
 * **Sequence Runnables** (`Sequence_runnables.py`):
   * Built the foundational LCEL pipe chain: `prompt | llm | parser`.
   * Demonstrated how `ChatPromptTemplate`, `ChatMistralAI`, and `StrOutputParser` compose as a single invokable unit.
 * **Parallel Runnables** (`parallel_runnables.py`):
   * Used `RunnableParallel` to run multiple independent LLM chains **concurrently** in a single `invoke()` call.
-  * All branches share the same input dict — each branch extracts its own key (`short`, `detailed`) and has its own prompt + parser pipeline.
-  * Returns a dict of results keyed by branch name.
+  * All branches share the same input dict — each branch extracts its own key and has its own prompt + parser pipeline.
 * **Passthrough Runnables** (`passthrough_runnables.py`):
-  * Chained two sequential stages using `RunnablePassthrough` to pass the raw output of `seq1` (generated code) into `seq2` as-is.
-  * `seq2` is a `RunnableParallel` with one passthrough branch (raw code) and one explanation branch (`explain_prompt | model | parser`).
+  * Chained two sequential stages using `RunnablePassthrough` to pass raw code output into a parallel explanation branch.
   * Final response dict contains both `code` and `explanation` keys.
+* **Custom Tools** (`custom_tool.py`):
+  * Used the `@tool` decorator to convert a plain Python function into an LLM-callable tool.
+  * Explored `.name`, `.description`, and `.args` — the tool metadata the LLM uses for reasoning.
+* **Tool Binding & Execution** (`call_bind_execute_tool.py`):
+  * Demonstrated the full bind → call → execute lifecycle: `llm.bind_tools([...])`, detecting `result.tool_calls`, manually invoking the tool, and feeding `ToolMessage` results back.
+* **News Summarizer** (`news_summarizer.py`):
+  * Combined `TavilySearchResults` (pre-built community tool) with an LCEL summarization chain to fetch and summarize live news.
+* **LangGraph ReAct Agent** (`Agent.py`):
+  * Built a full autonomous **ReAct (Reason + Act)** agent using `create_react_agent` from LangGraph.
+  * Integrated two real-time tools: **OpenWeatherMap** (weather) and **Tavily** (news search).
+  * Agent autonomously decides which tools to call, executes them, and synthesizes a final markdown response.
+* **City Agent Streamlit UI** (`streamlit_app.py`):
+  * Premium dark-themed Streamlit web app with `st.chat_message` for proper markdown rendering.
+  * **Agent Trace Panel**: per-response collapsible expander showing every internal step — human messages, tool calls with args, raw tool results, and AI reasoning messages.
+  * Sidebar toggle to auto-expand traces, quick-ask buttons, live stats counters.
 
 ---
 
@@ -225,4 +244,24 @@ MISTRAL_API_KEY=your_mistral_api_key_here
 4. Run passthrough code-generation + explanation chain:
    ```bash
    python Agents/Runnables/passthrough_runnables.py
+   ```
+5. Run custom tool demo:
+   ```bash
+   python Agents/Tools/custom_tool.py
+   ```
+6. Run tool binding + manual execution loop:
+   ```bash
+   python Agents/Tools/call_bind_execute_tool.py
+   ```
+7. Run news summarizer with Tavily:
+   ```bash
+   python Agents/Tools/news_summarizer.py
+   ```
+8. Run ReAct agent (CLI):
+   ```bash
+   python Agents/Tools/Agent.py
+   ```
+9. Launch premium City Agent Streamlit UI:
+   ```bash
+   streamlit run Agents/Tools/streamlit_app.py
    ```

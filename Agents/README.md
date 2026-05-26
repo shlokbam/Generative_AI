@@ -16,6 +16,13 @@ Agents/
 │   ├── parallel_runnables.py     # Concurrent multi-branch chains
 │   └── passthrough_runnables.py  # Piping raw output downstream
 │
+├── Tools/
+│   ├── custom_tool.py            # @tool decorator — creating custom tools
+│   ├── call_bind_execute_tool.py # Tool binding, LLM tool calls & manual execution
+│   ├── news_summarizer.py        # TavilySearch tool + LCEL summarization chain
+│   ├── Agent.py                  # LangGraph ReAct agent with weather & news tools
+│   └── streamlit_app.py          # Premium Streamlit UI with agent trace transparency
+│
 ├── .env                          # API keys (git-ignored)
 ├── requirements.txt              # Module dependencies
 └── README.md                     # This file
@@ -105,6 +112,137 @@ response = final_seq.invoke({"topic": "Write a palindrome checker in Java"})
 
 ---
 
+## 🔧 Tools
+
+LangChain **Tools** are functions the LLM can decide to call when needed. A Tool is just a Python function decorated with `@tool` — LangChain automatically extracts its name, description, and typed arguments for the LLM to reason about.
+
+### 4. `custom_tool.py` — `@tool` Decorator
+
+The simplest way to create a tool — wrap any Python function:
+
+```python
+from langchain.tools import tool
+
+@tool
+def get_greetings(name: str) -> str:
+    """This function is used to generate greetings for the user"""
+    return f"Hello {name}, Welcome to AI World"
+
+result = get_greetings.invoke({"name": "Shlok"})
+print(get_greetings.name)         # get_greetings
+print(get_greetings.description)  # This function is used to...
+print(get_greetings.args)         # {'name': {'type': 'string', ...}}
+```
+
+**Key Concepts:**
+- The docstring becomes the tool's description (what the LLM reads to decide when to call it)
+- Type hints become the tool's args schema
+- `.name`, `.description`, `.args` are auto-populated from the function signature
+
+---
+
+### 5. `call_bind_execute_tool.py` — Tool Binding & Manual Execution
+
+Demonstrates the full **bind → call → execute** lifecycle:
+
+```python
+# 1. Create tool
+@tool
+def get_text_length(text: str) -> str:
+    """Calculate the length of the text"""
+    return f"The length is {len(text)} characters"
+
+# 2. Bind to LLM
+llm_with_tool = llm.bind_tools([get_text_length])
+
+# 3. LLM decides to call the tool → extract call → execute manually → feed result back
+result = llm_with_tool.invoke(messages)
+if result.tool_calls:
+    tool_output = tools[result.tool_calls[0]['name']].invoke(result.tool_calls[0])
+    messages.append(ToolMessage(content=tool_output, tool_call_id=...))
+```
+
+**Key Concepts:**
+- `llm.bind_tools([...])` — registers tools with the LLM so it knows when to call them
+- The LLM returns `tool_calls` in the `AIMessage` when it wants to use a tool
+- You manually execute the tool and feed the `ToolMessage` result back into the conversation
+- This manual loop is what `AgentExecutor` / LangGraph automates
+
+---
+
+### 6. `news_summarizer.py` — `TavilySearchResults` + LCEL Chain
+
+Combines a built-in LangChain tool with an LCEL summarization chain:
+
+```python
+from langchain_community.tools.tavily_search import TavilySearchResults
+
+search_tool = TavilySearchResults(max_results=5)
+news_result = search_tool.invoke("Latest AI news of 2026")
+
+chain = prompt | llm | parser
+response = chain.invoke({"news": news_result})
+```
+
+**Key Concepts:**
+- Pre-built community tools (`TavilySearchResults`) work exactly like `@tool` functions
+- Tool output (a list of dicts) is passed directly into an LCEL chain as context
+- This is the foundation of a RAG-style tool-augmented pipeline
+
+---
+
+### 7. `Agent.py` — LangGraph ReAct Agent
+
+A full **ReAct (Reason + Act)** agent that autonomously decides which tools to call:
+
+```python
+from langgraph.prebuilt import create_react_agent
+
+@tool
+def get_weather(city: str) -> str: ...  # OpenWeatherMap API
+
+@tool  
+def get_news(city: str) -> str: ...    # Tavily search
+
+agent = create_react_agent(
+    model=llm,
+    tools=[get_weather, get_news],
+    prompt="You are a helpful City Agent assistant."
+)
+
+result = agent.invoke({"messages": [HumanMessage(content=user_input)]})
+```
+
+**Key Concepts:**
+- `create_react_agent` from LangGraph builds a full agentic loop automatically
+- The agent reasons about the user query, decides which tool(s) to call, executes them, and synthesizes a final answer
+- Supports multi-tool calls in a single turn (e.g. weather + news simultaneously)
+- Returns the full message history including intermediate tool messages
+
+---
+
+### 8. `streamlit_app.py` — City Agent Streamlit UI
+
+A premium dark-themed Streamlit web app wrapping the ReAct agent:
+
+**Features:**
+- 🌤 Real-time weather (OpenWeatherMap API)
+- 📰 Live news summaries (Tavily API)
+- 🔍 **Agent Trace Panel** — per-response expandable trace showing every internal step:
+  - 👤 Human messages
+  - ⚙️ Tool calls with args
+  - 📦 Tool results (raw API data)
+  - 🤖 AI reasoning messages
+- 🎛 Sidebar toggle to auto-expand traces
+- 💡 Quick-ask suggestion buttons
+- 📊 Live message & tool-call counters
+
+```bash
+streamlit run Tools/streamlit_app.py
+```
+
+---
+
 ## 🚀 Setup
 
 ### 1. Create & Activate Virtual Environment
@@ -122,6 +260,8 @@ pip install -r requirements.txt
 Create a `.env` file in this directory:
 ```env
 MISTRAL_API_KEY=your_mistral_api_key_here
+TAVILY_API_KEY=your_tavily_api_key_here
+OPENWEATHER_API_KEY=your_openweather_api_key_here
 ```
 
 ### 4. Run Scripts
@@ -134,6 +274,21 @@ python Runnables/parallel_runnables.py
 
 # Passthrough code + explanation chain
 python Runnables/passthrough_runnables.py
+
+# Custom tool demo
+python Tools/custom_tool.py
+
+# Tool binding + manual execution loop
+python Tools/call_bind_execute_tool.py
+
+# News summarizer with Tavily
+python Tools/news_summarizer.py
+
+# ReAct agent CLI
+python Tools/Agent.py
+
+# Premium Streamlit UI
+streamlit run Tools/streamlit_app.py
 ```
 
 ---
@@ -144,12 +299,18 @@ python Runnables/passthrough_runnables.py
 |---|---|
 | `langchain-core` | Runnable primitives, prompt templates, output parsers |
 | `langchain-mistralai` | `ChatMistralAI` LLM integration |
+| `langchain-community` | Pre-built tools (`TavilySearchResults`, etc.) |
+| `langgraph` | `create_react_agent` — full agentic loop |
+| `tavily-python` | Tavily web search API client |
+| `requests` | OpenWeatherMap HTTP calls |
+| `streamlit` | Web UI framework |
 | `python-dotenv` | Load `.env` API keys |
 
 ---
 
-## 🧩 LCEL Runnable Cheat Sheet
+## 🧩 Key Concepts Cheat Sheet
 
+### LCEL Runnables
 | Runnable | Description |
 |---|---|
 | `prompt \| model \| parser` | Sequential chain via pipe operator |
@@ -157,6 +318,15 @@ python Runnables/passthrough_runnables.py
 | `RunnablePassthrough()` | Echo input unchanged — preserves data through a parallel branch |
 | `RunnableLambda(fn)` | Wrap any Python function as a Runnable |
 
+### Tools & Agents
+| Concept | Description |
+|---|---|
+| `@tool` | Decorator that turns any Python function into an LLM-callable tool |
+| `llm.bind_tools([...])` | Register tools with the LLM so it knows when to use them |
+| `result.tool_calls` | List of tool calls the LLM wants to make |
+| `ToolMessage` | Message type that carries a tool's output back into the conversation |
+| `create_react_agent` | LangGraph prebuilt that runs a full ReAct reasoning + tool execution loop |
+
 ---
 
-*Video 3 of the [Generative AI & LangChain playlist](https://www.youtube.com/playlist?list=PLaldQ9PzZd9oXR4PMGR4pr_DX4wFHkFwR) — covers through Runnables. Tools & Agents coming next.*
+*Video 3 ✅ of the [Generative AI & LangChain playlist](https://www.youtube.com/playlist?list=PLaldQ9PzZd9oXR4PMGR4pr_DX4wFHkFwR) — Runnables, Tools & Agents fully covered.*
