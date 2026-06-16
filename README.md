@@ -1,7 +1,7 @@
 # Generative AI & LangChain - Hands-On Codebase 🚀
 
 A comprehensive repository of practical hands-on implementations, architectural modules, and complete codebases for Generative AI and LangChain concepts, structured around the following playlist:
-👉 **[Generative AI & LangChain Course Playlist](https://www.youtube.com/playlist?list=PLaldQ9PzZd9oXR4PMGR4pr_DX4wFHkFwR)**
+👉 **[Generative AI & LangChain Course Playlist](https://www.youtube.com/)**
 
 This repository serves as a centralized hub for all my completed implementations, modular integrations, and custom applications pushed for production-ready reference.
 
@@ -12,8 +12,6 @@ This repository serves as a centralized hub for all my completed implementations
 - [x] **Video 1: Foundations of LangChain, LLM Integrations, Local Embeddings & Streamlit UIs**  
 - [x] **Video 2: RAG Project - Multi-Format Ingestion, Document Loaders & Mistral AI Orchestration**  
 - [x] **Video 3: Runnables, Tools & Agents — LangChain Expression Language (LCEL) Internals**
-- [ ] **Video 4: (Upcoming)**
-- [ ] **Video 5: (Upcoming)**
 
 ---
 
