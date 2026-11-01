@@ -256,3 +256,7 @@ You can deploy this application for free in minutes using either **Streamlit Com
 - [x] **Contextual Retrieval**: Implement semantic search query parsing to fetch only relevant chunks.
 - [x] **Hybrid Search & Advanced Retrievers**: Implemented MMR and Multi-Query expansion retrieval configurations.
 - [x] **Conversational UI**: Built a premium Streamlit web app with dynamic sidebar tuning and structured document citations.
+
+---
+
+Built by [Shlok Bam](https://shlokbam.in), see more projects on my portfolio.

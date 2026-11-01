@@ -682,3 +682,10 @@ else:
             </p>
         </div>
         """, unsafe_allow_html=True)
+
+# credit, in the sidebar on every screen
+st.sidebar.markdown("---")
+st.sidebar.markdown(
+    "<a href='https://shlokbam.in' target='_blank' rel='noopener' style='color: #94a3b8; font-size: 0.85rem; text-decoration: none;'>Built by Shlok Bam · shlokbam.in</a>",
+    unsafe_allow_html=True,
+)

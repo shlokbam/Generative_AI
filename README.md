@@ -263,3 +263,7 @@ MISTRAL_API_KEY=your_mistral_api_key_here
    ```bash
    streamlit run Agents/Tools/streamlit_app.py
    ```
+
+---
+
+Built by [Shlok Bam](https://shlokbam.in), see more projects on my portfolio.
